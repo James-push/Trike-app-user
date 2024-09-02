@@ -27,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController passwordTextEditingController = TextEditingController();
 
   //change example 1
+  //change example 2
 
   String emailError = '';
   String passwordError = '';

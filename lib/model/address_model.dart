@@ -11,5 +11,6 @@ class AddressModel
     this.latitudePosition,
     this.longitudePosition,
     this.placeID,
-    this.placeName,});
+    this.placeName,
+  });
 }

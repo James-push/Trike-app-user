@@ -33,10 +33,14 @@ class GoogleMapMethods {
   }
 
   /// Reverse GeoCoding
-  static Future<String> convertGeoGraphicCoordinatesToReadableAddress(
-      Position position, BuildContext context) async {
+  static Future<String> getReadableAddress(Position position, BuildContext context) async
+  {
     String readableAddress = "";
     String geoCodingAPIURL = "https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.latitude},${position.longitude}&key=$googleMapKey";
+    double userLatitude = position.latitude;
+    double userLongitude = position.longitude;
+
+
 
     var responseFromAPI = await sendRequestToAPI(geoCodingAPIURL);
 
@@ -44,6 +48,9 @@ class GoogleMapMethods {
     {
       if (responseFromAPI != "error")
       {
+        print("Full Response: $responseFromAPI");
+
+        print("Latitude: $userLatitude, Longitude: $userLongitude");
         readableAddress = responseFromAPI["results"][0]["formatted_address"];
         print("readableAddress = " + readableAddress);
 
@@ -57,10 +64,15 @@ class GoogleMapMethods {
         Provider.of<AppInfo>(context, listen: false)
             .updatePickUpLocation(addressModel);
       }
+      else
+      {
+        print("\n\nError occured\n\n");
+      }
     }
     catch(e)
     {
-      print("ERROR HERE: " + e.toString());
+      print("\n\nERROR HERE:: \n$e\n");
+      return "error";
     }
 
 
