@@ -61,7 +61,8 @@ class MyApp extends StatelessWidget
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
-        home: FirebaseAuth.instance.currentUser == null ? LoginScreen() : HomePage(),
+        debugShowCheckedModeBanner: false, // Remove the debug banner
+        home: FirebaseAuth.instance.currentUser == null ? LoginScreen() : const HomePage(),
       ),
     );
   }

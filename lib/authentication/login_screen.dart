@@ -221,11 +221,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.blue, width: 2),
+                          borderSide: const BorderSide(color: Colors.blue, width: 2),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey, width: 1),
+                          borderSide: const BorderSide(color: Colors.grey, width: 1),
                         ),
                       ),
                     ),
@@ -248,11 +248,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.blue, width: 2),
+                          borderSide: const BorderSide(color: Colors.blue, width: 2),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey, width: 1),
+                          borderSide: const BorderSide(color: Colors.grey, width: 1),
                         ),
                       ),
                     ),
@@ -267,7 +267,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         MaterialPageRoute(builder: (context) => PasswordResetScreen()),
                       );
                     },
-                    child: Text(
+                    child: const Text(
                       "Forgot Password?",
                       style: TextStyle(
                         color: Colors.black45,
@@ -318,7 +318,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (c) => RegistrationScreen()));
+                                  Navigator.push(context, MaterialPageRoute(builder: (c) => const RegistrationScreen()));
                                 },
                             ),
                           ],
