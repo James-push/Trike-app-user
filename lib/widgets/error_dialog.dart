@@ -39,17 +39,17 @@ class ErrorDialog extends StatelessWidget {
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent, // Transparent background
+                  foregroundColor: Colors.black, // Text color
+                  shadowColor: Colors.transparent, // No shadow
+                ),
                 child: const Text(
                   'OK',
                   style: TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 16,
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent, // Transparent background
-                  foregroundColor: Colors.black, // Text color
-                  shadowColor: Colors.transparent, // No shadow
                 ),
               ),
             ),

@@ -1,6 +1,6 @@
 # user_application
 
-This is Flutter Trike - Isers App
+This is Flutter Trike - Users App
 
 ## Getting Started
 

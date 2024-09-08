@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:provider/provider.dart';
+import 'package:user_application/pages/menu_page.dart';
 
-import '../appInfo/app_info.dart';
 import '../global.dart';
+import '../methods/googlemap_methods.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,8 +21,12 @@ class _HomePageState extends State<HomePage> {
   final Completer<GoogleMapController> googleMapCompleterController = Completer<GoogleMapController>();
   GoogleMapController? controllerGoogleMap;
   Position? currentPositionUser;
+  GlobalKey<ScaffoldState> sKey = GlobalKey<ScaffoldState>();
 
   int selectedIndex = 0;
+
+  // Controller for DraggableScrollableSheet
+  final DraggableScrollableController _draggableController = DraggableScrollableController();
 
   // Displaying the user's current location
   Future<void> getCurrentLocation() async {
@@ -30,19 +35,53 @@ class _HomePageState extends State<HomePage> {
 
     LatLng userLatLng = LatLng(currentPositionUser!.latitude, currentPositionUser!.longitude);
     CameraPosition positionCamera = CameraPosition(target: userLatLng, zoom: 18);
+    print("\n\nCoordinates: $userLatLng\n\n");
     controllerGoogleMap!.animateCamera(CameraUpdate.newCameraPosition(positionCamera));
   }
 
-  void _onItemTapped(int index) {
+  void onItemTapped(int index) {
     setState(() {
       selectedIndex = index;
-      // Handle navigation or actions based on the selected index here
     });
+  }
+
+  Future<void> onGPSButtonPressed() async {
+    await getCurrentLocation();
+
+    if (currentPositionUser != null) {
+      String readableAddress = await GoogleMapMethods.getReadableAddress(currentPositionUser!, context);
+      print("User's readable address: $readableAddress");
+    }
+  }
+
+  // Expands the draggable bottom sheet when "Where to?" button is pressed
+  void _expandBottomSheet() {
+    _draggableController.animateTo(
+      0.8, // Expand to 80% of the screen height
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    ///Overlays top status bar and bottom navbar
+    SystemUiOverlayStyle systemUiOverlayStyle = const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarDividerColor: Colors.transparent,
+    );
+    SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
+
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky, overlays: [SystemUiOverlay.bottom]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
     return Scaffold(
+      key: sKey,
+      drawer: const Drawer(
+        child: MenuPage(),
+      ),
       body: Stack(
         children: [
           /// Google Maps
@@ -82,7 +121,7 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
               child: IconButton(
-                onPressed: getCurrentLocation,
+                onPressed: onGPSButtonPressed,
                 icon: const Icon(Icons.my_location, color: Colors.black),
               ),
             ),
@@ -95,7 +134,7 @@ class _HomePageState extends State<HomePage> {
             child: Container(
               width: 46.0, // Standard size for a circular button
               height: 46.0,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white, // Background color of the circle
                 boxShadow: [
@@ -108,45 +147,62 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
               child: IconButton(
-                icon: Icon(Icons.menu, size: 24.0, color: Colors.black87), // Adjust icon color
+                icon: const Icon(Icons.menu, size: 24.0, color: Colors.black87), // Adjust icon color
                 onPressed: () {
-                  print("Hamburger button pressed");
+                  sKey.currentState?.openDrawer(); // Open the drawer
                 },
               ),
             ),
           ),
 
-          /// Draggable Search Container
+          /// Draggable Scrollable Rounded Modal Bottom Sheet
           DraggableScrollableSheet(
-            initialChildSize: 0.125, // Initial size of the sheet when collapsed
-            minChildSize: 0.125, // Minimum size (collapsed)
-            maxChildSize: 0.2, // Maximum size (expanded)
+            controller: _draggableController,
+            initialChildSize: 0.135, // Initial collapsed size
+            minChildSize: 0.135, // Minimum size when collapsed
+            maxChildSize: 0.8, // Maximum size when expanded
             builder: (BuildContext context, ScrollController scrollController) {
               return Container(
                 decoration: const BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 10.0,
-                      spreadRadius: 2.0,
-                      offset: Offset(0, 5),
+                      color: Color(0x76000018), // Shadow color
+                      blurRadius: 8.0, // Blur radius
+                      spreadRadius: 3.0, // Spread radius
+                      offset: Offset(0, 4), // Offset of the shadow
                     ),
                   ],
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
                 ),
-                child: Column(
+                child: ListView(
+                  controller: scrollController,
                   children: [
-                    // Draggable handle at the top
-                    Container(
-                      height: 5.0,
-                      width: 50.0,
-                      margin: const EdgeInsets.symmetric(vertical: 8.0),
-                      decoration: BoxDecoration(
-                        color: Color(0xffe5e5e5),
-                        borderRadius: BorderRadius.circular(2.0),
+                    /// "Where to?" button inside the bottom sheet
+                    GestureDetector(
+                      onTap: _expandBottomSheet, // Expands the bottom sheet when pressed
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 20), // Add padding at the top to move it up
+                        child: Container(
+                          height: 50.0,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8.0),
+                            color: Colors.grey.shade200,
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'Where to?',
+                              style: TextStyle(
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
+                    // Add more widgets as per your need
                   ],
                 ),
               );
@@ -188,9 +244,10 @@ class _HomePageState extends State<HomePage> {
           unselectedItemColor: Colors.grey,
           showSelectedLabels: true,
           showUnselectedLabels: true,
-          onTap: _onItemTapped,
+          onTap: onItemTapped,
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.white,
+          enableFeedback: false,
         ),
       ),
     );

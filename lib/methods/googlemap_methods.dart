@@ -7,74 +7,72 @@ import 'package:user_application/global.dart';
 import 'package:http/http.dart' as http;
 import 'package:user_application/model/address_model.dart';
 
+
 class GoogleMapMethods {
-  static sendRequestToAPI(String apiURL) async
-  {
+  static sendRequestToAPI(String apiURL) async {
     http.Response responseFromAPI = await http.get(Uri.parse(apiURL));
 
-    try
-    {
-      if (responseFromAPI.statusCode == 200)
-      {
+    try {
+      if (responseFromAPI.statusCode == 200) {
         String dataFromAPI = responseFromAPI.body;
         var dataDecoded = jsonDecode(dataFromAPI);
         return dataDecoded;
-      }
-      else
-      {
+      } else {
         return "error";
       }
-    }
-    catch (errorMsg)
-    {
+    } catch (errorMsg) {
       print("\n\nError Occurred::\n$errorMsg\n\n");
       return "error";
     }
   }
 
-  /// Reverse GeoCoding
-  static Future<String> getReadableAddress(Position position, BuildContext context) async
-  {
+  /// Reverse GeoCoding with HERE API
+  static Future<String> getReadableAddress(Position position, BuildContext context) async {
     String readableAddress = "";
-    String geoCodingAPIURL = "https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.latitude},${position.longitude}&key=$googleMapKey";
+    String street = "";
+    String block = "";
+
+    String geoCodingAPIURL =
+        "https://revgeocode.search.hereapi.com/v1/revgeocode?at=${position.latitude},${position.longitude}&apikey=$hereAPIKey";
+
     double userLatitude = position.latitude;
     double userLongitude = position.longitude;
 
-
-
     var responseFromAPI = await sendRequestToAPI(geoCodingAPIURL);
 
-    try
-    {
-      if (responseFromAPI != "error")
-      {
+    try {
+      if (responseFromAPI != "error") {
         print("Full Response: $responseFromAPI");
 
         print("Latitude: $userLatitude, Longitude: $userLongitude");
-        readableAddress = responseFromAPI["results"][0]["formatted_address"];
-        print("readableAddress = " + readableAddress);
+
+        // Extract readable address
+        var addressInfo = responseFromAPI['items'][0];
+        readableAddress = addressInfo['address']['label'];
+        print("readableAddress = $readableAddress");
+
+        // Extract specific components like street, block, etc.
+        street = addressInfo['address']['street'] ?? "Street not found";
+        block = addressInfo['address']['district'] ?? "Block not found";
+
+        print("Street: $street");
+        print("Block: $block");
 
         AddressModel addressModel = AddressModel();
         addressModel.readableAddress = readableAddress;
         addressModel.placeName = readableAddress;
-        addressModel.placeID = responseFromAPI["results"][0]["place_id"];
+        addressModel.placeID = addressInfo["id"];
         addressModel.latitudePosition = position.latitude;
         addressModel.longitudePosition = position.longitude;
 
-        Provider.of<AppInfo>(context, listen: false)
-            .updatePickUpLocation(addressModel);
+        Provider.of<AppInfo>(context, listen: false).updatePickUpLocation(addressModel);
+      } else {
+        print("\n\nError occurred\n\n");
       }
-      else
-      {
-        print("\n\nError occured\n\n");
-      }
-    }
-    catch(e)
-    {
+    } catch (e) {
       print("\n\nERROR HERE:: \n$e\n");
       return "error";
     }
-
 
     return readableAddress;
   }

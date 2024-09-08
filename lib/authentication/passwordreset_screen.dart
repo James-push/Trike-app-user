@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class PasswordResetScreen extends StatefulWidget {
+  const PasswordResetScreen({super.key});
+
   @override
   _PasswordResetScreenState createState() => _PasswordResetScreenState();
 }
@@ -22,7 +24,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
       await auth.sendPasswordResetEmail(email: email);
       _showSuccessDialog("Password reset email sent. Please check your inbox.");
     } catch (e) {
-      _showErrorDialog("An error occurred. Please try again." + "\n\nError code: " + e.toString());
+      _showErrorDialog("An error occurred. Please try again.\n\nError code: $e");
     }
   }
 
@@ -30,11 +32,11 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Error"),
+        title: const Text("Error"),
         content: Text(message),
         actions: <Widget>[
           TextButton(
-            child: Text("OK"),
+            child: const Text("OK"),
             onPressed: () {
               Navigator.of(context).pop();
             },
@@ -48,11 +50,11 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Success"),
+        title: const Text("Success"),
         content: Text(message),
         actions: <Widget>[
           TextButton(
-            child: Text("OK"),
+            child: const Text("OK"),
             onPressed: () {
               Navigator.of(context).pop();
             },
@@ -66,10 +68,10 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Reset Password"),
+        title: const Text("Reset Password"),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
@@ -77,7 +79,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
               controller: userEmail,
               decoration: InputDecoration(
                 labelText: "Email Address",
-                labelStyle: TextStyle(
+                labelStyle: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -86,19 +88,19 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.blue, width: 2),
+                  borderSide: const BorderSide(color: Colors.blue, width: 2),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey, width: 1),
+                  borderSide: const BorderSide(color: Colors.grey, width: 1),
                 ),
               ),
               keyboardType: TextInputType.emailAddress,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _sendPasswordResetEmail,
-              child: Text("Send Password Reset Email"),
+              child: const Text("Reset Password"),
             ),
           ],
         ),

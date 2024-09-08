@@ -10,6 +10,8 @@ import 'package:user_application/widgets/error_dialog.dart';
 import 'package:user_application/widgets/loading_dialog.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -26,8 +28,8 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController emailTextEditingController = TextEditingController();
   TextEditingController passwordTextEditingController = TextEditingController();
 
-  //change example 1
-  //change example 2
+  bool isPasswordVisible = false; // Add this boolean to track the password visibility
+
 
   String emailError = '';
   String passwordError = '';
@@ -63,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (!hasError) {
       try {
-        await LogInUserNow();
+        await loginUserNow();
       } on FirebaseAuthException catch (e) {
         setState(() {
           if (e.code == 'user-not-found') {
@@ -81,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  LogInUserNow() async {
+  loginUserNow() async {
     showDialog(
         context: context,
         builder: (BuildContext context) => LoadingDialog(messageTxt: "Please wait...")
@@ -120,6 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 default:
                   showErrorDialog(context, "An error occurred. Please try again.");
                   break;
+
               }
             } else {
               // Handle any other errors
@@ -232,7 +235,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 22,),
                     // Password Text Field
                     TextField(
-                      obscureText: true,
+                      obscureText: !isPasswordVisible,
                       controller: passwordTextEditingController,
                       keyboardType: TextInputType.text,
                       decoration: InputDecoration(
@@ -254,6 +257,17 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(color: Colors.grey, width: 1),
                         ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              isPasswordVisible = !isPasswordVisible;
+                            });
+                          },
+                        ),
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -264,7 +278,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => PasswordResetScreen()),
+                        MaterialPageRoute(builder: (context) => const PasswordResetScreen()),
                       );
                     },
                     child: const Text(
