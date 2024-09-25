@@ -34,7 +34,6 @@ void main() async {
       Permission.locationWhenInUse.request();
     }
   });
-
   runApp(const MyApp());
 }
 

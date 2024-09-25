@@ -1,8 +1,10 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:user_application/methods/user_service.dart';
+import 'package:user_application/pages/profile_page.dart';
 
-import '../widgets/loading_dialog.dart'; // Ensure this path is correct
+import '../widgets/loading_dialog.dart';
+import 'about_page.dart'; // Ensure this path is correct
 
 class MenuPage extends StatelessWidget {
   const MenuPage({super.key});
@@ -108,7 +110,10 @@ class MenuPage extends StatelessWidget {
                             InkWell(
                               onTap: () {
                                 // Handle account click
-                                print('My Account clicked');
+                                Navigator.push(context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ProfilePage(),
+                                    ));
                                 // Navigate to a different page or perform an action
                               },
                               child: const Text(
@@ -166,7 +171,12 @@ class MenuPage extends StatelessWidget {
                       child: Icon(Icons.info_outline_rounded, color: Colors.black54),
                     ),
                     title: const Text('About', style: TextStyle(color: Colors.black87)),
-                    onTap: () => print('About'),
+                    onTap: (){
+                      Navigator.push(context,
+                          MaterialPageRoute(
+                            builder: (context) => AboutPage(),
+                          ));
+                    },
                   ),
                 ],
               ),
