@@ -2,18 +2,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:user_application/authentication/login_screen.dart';
 
-class PasswordResetScreen extends StatefulWidget {
-  const PasswordResetScreen({super.key});
+class EmailResetScreen extends StatefulWidget {
+  const EmailResetScreen({super.key});
 
   @override
-  _PasswordResetScreenState createState() => _PasswordResetScreenState();
+  _EmailResetScreenState createState() => _EmailResetScreenState();
 }
 
-class _PasswordResetScreenState extends State<PasswordResetScreen> {
+class _EmailResetScreenState extends State<EmailResetScreen> {
   final TextEditingController userEmail = TextEditingController();
   final FirebaseAuth auth = FirebaseAuth.instance;
+  String? newEmail;
 
-  void _sendPasswordResetEmail() async {
+  void _sendEmailVerification() async {
     final String email = userEmail.text.trim();
 
     if (email.isEmpty) {
@@ -33,16 +34,51 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
     );
 
     try {
-      await auth.sendPasswordResetEmail(email: email);
-      Navigator.of(context).pop(); // Dismiss the loading dialog
-      await _showSuccessDialog("Password reset email sent. Please check your inbox.");
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
+      final user = auth.currentUser;
+      if (user != null) {
+        newEmail = email;
+
+        // Send verification email to the new address (without updating Firebase email yet)
+        await auth.currentUser?.sendEmailVerification();
+
+        Navigator.of(context).pop(); // Dismiss the loading dialog
+
+        await _showSuccessDialog("A verification email has been sent to your new email address. Please verify it and then return to update your email.");
+
+      } else {
+        Navigator.of(context).pop(); // Dismiss the loading dialog
+        _showErrorDialog("No user is currently logged in.");
+      }
     } catch (e) {
       Navigator.of(context).pop(); // Dismiss the loading dialog
       _showErrorDialog("An error occurred. Please try again.\n\nError code: $e");
+    }
+  }
+
+  Future<void> _updateEmailAfterVerification() async {
+
+    final String email = userEmail.text.trim();
+    newEmail = email;
+    if (newEmail == null || newEmail!.isEmpty) {
+      _showErrorDialog("No new email to update.");
+      return;
+    }
+
+    // Ensure user email has been verified
+    await auth.currentUser?.reload();
+    if (auth.currentUser?.emailVerified == true) {
+      try {
+        await auth.currentUser?.updateEmail(newEmail!);
+        _showSuccessDialog("Your email has been updated successfully.");
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      } catch (e) {
+        _showErrorDialog("Failed to update email. Error: $e");
+      }
+    } else {
+      _showErrorDialog("Please verify your new email before updating.");
     }
   }
 
@@ -93,7 +129,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Reset Password",
+          "Update Email",
           style: TextStyle(
             color: Colors.black,
             fontSize: 20,
@@ -112,7 +148,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
             TextFormField(
               controller: userEmail,
               decoration: InputDecoration(
-                label: const Text("Email Address"),
+                label: const Text("New Email Address"),
                 prefixIcon: const Icon(Icons.email),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.0),
@@ -129,7 +165,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _sendPasswordResetEmail,
+                onPressed: _sendEmailVerification,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromARGB(255, 75, 201, 104),
                   foregroundColor: Colors.white,
@@ -138,7 +174,23 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
                 ),
-                child: const Text("Reset Password"),
+                child: const Text("Send Verification Email"),
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _updateEmailAfterVerification,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 75, 201, 104),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                ),
+                child: const Text("Update Email After Verification"),
               ),
             ),
           ],

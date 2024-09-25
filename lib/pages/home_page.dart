@@ -4,7 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:user_application/pages/menu_page.dart';
-
+import 'package:user_application/pages/profile_page.dart';
+import 'trips_page.dart';
 import '../global.dart';
 import '../methods/googlemap_methods.dart';
 
@@ -15,6 +16,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 //change
+
 class _HomePageState extends State<HomePage> {
   double containerHeight = 100;
   double bottomPadding = 0;
@@ -43,6 +45,30 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       selectedIndex = index;
     });
+
+    switch (index) {
+      case 0:
+      // Navigate to HomeScreen
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+        break;
+      case 1:
+      // Navigate to Trips Screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const TripsScreen()),
+        );
+        break;
+      case 2:
+      // Navigate to ProfileScreen
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfilePage()),
+        );
+        break;
+    }
   }
 
   Future<void> onGPSButtonPressed() async {
