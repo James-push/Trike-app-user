@@ -2,8 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:user_application/pages/about_page.dart';
 import 'package:user_application/pages/edit_profile.dart';
-import 'package:user_application/pages/trips_page.dart';
-import 'package:user_application/pages/home_page.dart';
+import '../methods/custom_page_route.dart';
 import '../methods/fetchUserData.dart';
 import '../methods/user_service.dart';
 import '../widgets/error_dialog.dart';
@@ -11,6 +10,7 @@ import '../widgets/loading_dialog.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+
 
 // Error dialog
 void showErrorDialog(BuildContext context, String message) {
@@ -92,41 +92,11 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void onItemTapped(int index) {
-    setState(() {
-      selectedIndex = index;
-    });
-
-    switch (index) {
-      case 0:
-      // Navigate to HomeScreen
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
-        break;
-      case 1:
-      // Navigate to Trips Screen
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const TripsScreen()),
-        );
-        break;
-      case 2:
-      // Navigate to ProfileScreen
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ProfilePage()),
-        );
-        break;
-    }
-  }
-
   Future<void> logOut(BuildContext context) async {
 
     showDialog(
         context: context,
-        builder: (BuildContext context) => LoadingDialog(messageTxt: "Logging out...")
+        builder: (BuildContext context) => LoadingDialog(messageTxt: "Please wait...")
 
     );
     // Introduce a small delay (e.g., 1 second) to ensure the dialog is displayed
@@ -150,25 +120,24 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // Function to show the log-out confirmation dialog
   void _showLogOutDialog() {
-    showDialog(
+    showCupertinoDialog(
       context: context,
-      builder: (context) =>
-          AlertDialog(
-            title: const Text("Log Out"),
-            content: const Text("Are you sure you want to Log out?"),
-            actions: <Widget>[
-              TextButton(
-                child: const Text("YES"),
-                  onPressed: () => logOut(context)
-              ),
-              TextButton(
-                child: const Text("CANCEL"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
+      builder: (context) => CupertinoAlertDialog(
+        title: const Text("Log Out"),
+        content: const Text("Are you sure you want to log out?"),
+        actions: <Widget>[
+          CupertinoDialogAction(
+            child: const Text("Cancel"),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
           ),
+          CupertinoDialogAction(
+            child: const Text("Yes"),
+            onPressed: () => logOut(context),
+          ),
+        ],
+      ),
     );
   }
 
@@ -186,15 +155,6 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(
-                  builder: (context) => const HomePage(),
-                ));
-          },
-        ),
         backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false, // Removes default back button
@@ -309,10 +269,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ),
                                   ),
                                   onTap: () {
-                                    Navigator.push(context,
-                                        MaterialPageRoute(
-                                          builder: (context) => const EditProfilePage(),
-                                        ));
+                                    Navigator.push(
+                                      context,
+                                      CustomPageRoute(page: const EditProfilePage()), // Use your custom route
+                                    );
                                   },
                                 )
                               ],
@@ -458,10 +418,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ),
                                   ),
                                   onTap: () {
-                                    Navigator.push(context,
-                                        MaterialPageRoute(
-                                          builder: (context) => AboutPage(),
-                                        ));
+                                    Navigator.push(
+                                      context,
+                                      CustomPageRoute(page: AboutPage()), // Use your custom route
+                                    );
                                   },
                                 )
                               ],
@@ -534,31 +494,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_rounded),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history_outlined),
-            label: 'Trips',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle_outlined),
-            label: 'Profile',
-          ),
-        ],
-        currentIndex: selectedIndex,
-        selectedItemColor: Colors.black87,
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        onTap: onItemTapped,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        enableFeedback: false,
       ),
     );
   }

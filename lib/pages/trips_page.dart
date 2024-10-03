@@ -14,48 +14,18 @@ void showErrorDialog(BuildContext context, String message) {
   );
 }
 
-class TripsScreen extends StatefulWidget {
-  const TripsScreen({super.key});
+class TripsPage extends StatefulWidget {
+  const TripsPage({super.key});
 
   @override
-  _TripsScreenState createState() => _TripsScreenState();
+  _TripsPageState createState() => _TripsPageState();
 }
 
-class _TripsScreenState extends State<TripsScreen> {
+class _TripsPageState extends State<TripsPage> {
 
   int selectedIndex = 1;
 
   final String? profileUrl = null; // Assume this value comes from user data (null means no profile picture)
-
-  void onItemTapped(int index) {
-    setState(() {
-      selectedIndex = index;
-    });
-
-    switch (index) {
-      case 0:
-      // Navigate to HomeScreen
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
-        break;
-      case 1:
-      // Navigate to Trips Screen
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const TripsScreen()),
-        );
-        break;
-      case 2:
-      // Navigate to ProfileScreen
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ProfilePage()),
-        );
-        break;
-    }
-  }
 
   @override
   void initState() {
@@ -102,31 +72,6 @@ class _TripsScreenState extends State<TripsScreen> {
             Text("Display Trips History Here...")
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_rounded),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history_outlined),
-            label: 'Trips',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle_outlined),
-            label: 'Profile',
-          ),
-        ],
-        currentIndex: selectedIndex,
-        selectedItemColor: Colors.black87,
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        onTap: onItemTapped,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        enableFeedback: false,
       ),
     );
   }

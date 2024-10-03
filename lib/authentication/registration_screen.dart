@@ -25,22 +25,32 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   String emailError = '';
   String passwordError = '';
 
+  bool isPasswordVisible = false; // Add this boolean to track the password visibility
+
+  TextEditingController confirmPasswordTextEditingController = TextEditingController();
+
+  String confirmPasswordError = ''; // Add error for confirm password field
+
   validateSignUpForm() {
     final String name = userNameTextEditingController.text.trim();
     final String phone = userPhoneTextEditingController.text.trim();
     final String email = emailTextEditingController.text.trim();
     final String password = passwordTextEditingController.text.trim();
+    final String confirmPassword = confirmPasswordTextEditingController.text.trim();
+
 
     // RegEx patterns
     final RegExp nameRegExp = RegExp(r'^[a-zA-Z ]{3,}$');
     final RegExp emailRegExp = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
-    final RegExp passwordRegExp = RegExp(r'^(?=.*[A-Z])(?=.*[!@#\$&*~])(?=.*[0-9])(?=.*[a-z]).{8,}$');
+    final RegExp passwordRegExp = RegExp(r'^(?=.*[A-Z])(?=.*[!@#\$&*~.])(?=.*[0-9])(?=.*[a-z]).{8,}$');
+
 
     setState(() {
       nameError = '';
       phoneError = '';
       emailError = '';
       passwordError = '';
+      confirmPasswordError = '';
     });
 
     bool hasError = false;
@@ -68,11 +78,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     if (!passwordRegExp.hasMatch(password)) {
       setState(() {
-        passwordError = "Password should be: "
-            "\nAt least 8 characters long "
-            "\nMinimum one uppercase"
-            "\nMinimum one number"
-            "\nMinimum one symbol";
+        passwordError = "Password must be at least 8 characters long, include an \nuppercase letter, a number, and a special character.";
+      });
+      hasError = true;
+    }
+
+    // Check if passwords match
+    if (password != confirmPassword) {
+      setState(() {
+        confirmPasswordError = "Passwords do not match.";
+        passwordError = "Passwords do not match.";
       });
       hasError = true;
     }
@@ -161,7 +176,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         labelStyle: const TextStyle(
                           fontSize: 14,
                           color: Colors.black87,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.normal,
                         ),
                         errorText: nameError.isEmpty ? null : nameError,
                         border: OutlineInputBorder(
@@ -169,7 +184,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.blue, width: 2),
+                          borderSide: const BorderSide(color: Colors.green, width: 2),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -187,7 +202,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         labelStyle: const TextStyle(
                           fontSize: 14,
                           color: Colors.black87,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.normal,
                         ),
                         errorText: phoneError.isEmpty ? null : phoneError,
                         border: OutlineInputBorder(
@@ -195,7 +210,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.blue, width: 2),
+                          borderSide: const BorderSide(color: Colors.green, width: 2),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -213,7 +228,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         labelStyle: const TextStyle(
                           fontSize: 14,
                           color: Colors.black87,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.normal,
                         ),
                         errorText: emailError.isEmpty ? null : emailError,
                         border: OutlineInputBorder(
@@ -221,7 +236,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.blue, width: 2),
+                          borderSide: const BorderSide(color: Colors.green, width: 2),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -232,7 +247,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     const SizedBox(height: 22,),
                     // Password Text Field
                     TextField(
-                      obscureText: true,
+                      obscureText: !isPasswordVisible,
                       controller: passwordTextEditingController,
                       keyboardType: TextInputType.text,
                       decoration: InputDecoration(
@@ -240,7 +255,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         labelStyle: const TextStyle(
                           fontSize: 14,
                           color: Colors.black87,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.normal,
                         ),
                         errorText: passwordError.isEmpty ? null : passwordError,
                         border: OutlineInputBorder(
@@ -248,14 +263,65 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.blue, width: 2),
+                          borderSide: const BorderSide(color: Colors.green, width: 2),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(color: Colors.grey, width: 1),
                         ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              isPasswordVisible = !isPasswordVisible;
+                            });
+                          },
+                        ),
                       ),
                     ),
+
+                    const SizedBox(height: 22,),
+                    // Confirm Password Text Field
+                    TextField(
+                      obscureText: !isPasswordVisible,
+                      controller: confirmPasswordTextEditingController,
+                      keyboardType: TextInputType.text,
+                      decoration: InputDecoration(
+                        labelText: "Confirm Password",
+                        labelStyle: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.normal,
+                        ),
+                        errorText: confirmPasswordError.isEmpty ? null : confirmPasswordError,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Colors.green, width: 2),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Colors.grey, width: 1),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              isPasswordVisible = !isPasswordVisible;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+
                     const SizedBox(height: 42,),
                     // Register button
                     ElevatedButton(
@@ -264,7 +330,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black87,
-                          padding: const EdgeInsets.symmetric(horizontal: 130, vertical: 16),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: MediaQuery.of(context).size.width * 0.335,
+                              vertical: 15
+                          ),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10)
                           )
@@ -274,7 +343,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
-                              fontWeight: FontWeight.bold)),
+                              fontWeight: FontWeight.w600)),
                     )
                   ],
                 ),
@@ -295,8 +364,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       TextSpan(
                         text: "Login here",
                         style: const TextStyle(
-                          color: Colors.blue, // Different color for the clickable text
-                          fontWeight: FontWeight.bold, // Make the text bold
+                          color: Colors.green, // Different color for the clickable text
+                          fontWeight: FontWeight.normal, // Make the text bold
                         ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {

@@ -7,12 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:user_application/authentication/passwordreset_screen.dart';
 import 'package:user_application/pages/change_email.dart';
-import 'package:user_application/pages/profile_page.dart';
-import 'package:user_application/pages/trips_page.dart';
-import 'package:user_application/pages/home_page.dart';
+import '../methods/custom_page_route.dart';
 import '../methods/fetchUserData.dart';
 import '../widgets/error_dialog.dart';
-
 
 // Error dialog
 void showErrorDialog(BuildContext context, String message) {
@@ -30,7 +27,7 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  int selectedIndex = 2;
+
   bool isPasswordVisible = false; // Track password visibility
 
   File? _imageFile; // File to store the selected image
@@ -44,33 +41,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final TextEditingController _phoneController = TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  void onItemTapped(int index) {
-    setState(() {
-      selectedIndex = index;
-    });
-
-    switch (index) {
-      case 0:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
-        break;
-      case 1:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const TripsScreen()),
-        );
-        break;
-      case 2:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const EditProfilePage()),
-        );
-        break;
-    }
-  }
 
   @override
   void initState() {
@@ -326,12 +296,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const ProfilePage(),
-              ),
-            );
+            Navigator.pop(context);  // Navigate back to the previous page
           },
         ),
         backgroundColor: Colors.white,
@@ -385,30 +350,43 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 controller: _nameController,
                 decoration: InputDecoration(
                   label: const Text("Name"),
-                  prefixIcon: const Icon(Icons.person),
+                  prefixIcon: const Icon(
+                      Icons.person,
+                      color: Colors.grey),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide(color: iconBGColor, width: 2.0),
+                    borderSide: BorderSide(color: Colors.grey, width: 1.0), // Default gray color
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide(color: iconBGColor, width: 2.0),
+                    borderSide: BorderSide(color: Colors.grey, width: 1.0), // Default gray color
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(color: Colors.green, width: 2.0), // Green when focused
                   ),
                 ),
               ),
-      const SizedBox(height: 16),
+
+              const SizedBox(height: 16),
       TextFormField(
         controller: _phoneController,
         decoration: InputDecoration(
           label: const Text("Phone"),
-          prefixIcon: const Icon(Icons.phone),
+          prefixIcon: const Icon(
+            Icons.phone,
+            color: Colors.grey,),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.0),
-            borderSide: BorderSide(color: iconBGColor, width: 2.0),
+            borderSide: BorderSide(color: Colors.grey, width: 1.0), // Default gray color
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.0),
-            borderSide: BorderSide(color: iconBGColor, width: 2.0),
+            borderSide: BorderSide(color: Colors.grey, width: 1.0), // Default gray color
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.0),
+            borderSide: BorderSide(color: Colors.green, width: 2.0), // Green when focused
           ),
         ),
       ),
@@ -417,10 +395,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: (){
-                    Navigator.push(context,
-                        MaterialPageRoute(
-                          builder: (context) => ChangeEmailPage(),
-                        ));
+                    Navigator.push(
+                      context,
+                      CustomPageRoute(page: ChangeEmailPage()), // Use your custom route
+                    );
                   }, // Show password dialog and save
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white, // Background color of the button
@@ -428,8 +406,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12), // Rounded corners
                       side: BorderSide(
-                        color: iconBGColor, // Border color
-                        width: 2.0, // Border width
+                        color: Colors.grey, // Border color
+                        width: 1.0, // Border width
                       ),
                     ),
                     elevation: 0,
@@ -438,7 +416,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min, // Wrap content size
                     children: <Widget>[
-                      const Icon(Icons.email, color: Color.fromARGB(255, 77, 87, 88)), // Leading icon
+                      const Icon(
+                          Icons.email,
+                          color: Colors.grey), // Leading icon
                       const SizedBox(width: 10), // Space between leading icon and text
                       const Expanded(
                         child: Align(
@@ -464,10 +444,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
         width: double.infinity,
         child: ElevatedButton(
           onPressed: (){
-            Navigator.push(context,
-                MaterialPageRoute(
-                  builder: (context) => const PasswordResetScreen(),
-                ));
+            Navigator.push(
+              context,
+              CustomPageRoute(page: const PasswordResetScreen()), // Use your custom route
+            );
           }, // Show password dialog and save
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white, // Background color of the button
@@ -475,8 +455,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12), // Rounded corners
             side: BorderSide(
-              color: iconBGColor, // Border color
-              width: 2.0, // Border width
+              color: Colors.grey, // Border color
+              width: 1.0, // Border width
              ),
             ),
             elevation: 0,
@@ -485,7 +465,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           child: Row(
             mainAxisSize: MainAxisSize.min, // Wrap content size
             children: <Widget>[
-              const Icon(Icons.lock, color: Color.fromARGB(255, 77, 87, 88)), // Leading icon
+              const Icon(Icons.lock, color: Colors.grey), // Leading icon
               const SizedBox(width: 10), // Space between leading icon and text
               const Expanded(
                 child: Align(
@@ -526,32 +506,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
     ),
     ),
     ),
-
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_rounded),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history_outlined),
-            label: 'Trips',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle_outlined),
-            label: 'Profile',
-          ),
-        ],
-        currentIndex: selectedIndex,
-        selectedItemColor: Colors.black87,
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        onTap: onItemTapped,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        enableFeedback: false,
-      ),
     );
   }
 }

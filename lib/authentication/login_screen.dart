@@ -5,9 +5,11 @@ import 'package:user_application/authentication/passwordreset_screen.dart';
 import 'package:user_application/authentication/registration_screen.dart';
 import 'package:flutter/gestures.dart';
 import 'package:user_application/global.dart';
-import 'package:user_application/pages/home_page.dart';
+import 'package:user_application/widgets/bottom_navigation_bar.dart';
 import 'package:user_application/widgets/error_dialog.dart';
 import 'package:user_application/widgets/loading_dialog.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -40,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     // RegEx patterns
     final RegExp emailRegExp = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
-    final RegExp passwordRegExp = RegExp(r'^(?=.*[A-Z])(?=.*[!@#\$&*~])(?=.*[0-9])(?=.*[a-z]).{8,}$');
+    final RegExp passwordRegExp = RegExp(r'^(?=.*[A-Z])(?=.*[!@#$&*~])(?=.*[0-9])(?=.*[a-z]).{8,}$');
 
     setState(() {
       emailError = '';
@@ -61,6 +63,13 @@ class _LoginScreenState extends State<LoginScreen> {
         passwordError = "Invalid password.";
       });
       hasError = true;
+    }
+
+    // Check for internet connectivity
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      showErrorDialog(context, "No internet connection. Please check your connection and try again.");
+      return; // Exit early if there's no connection
     }
 
     if (!hasError) {
@@ -144,7 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               snackBar.showSnackBarMsg("Logged in Successfully", context);
               // Redirects user to homepage if user's account is not blocked
-              Navigator.push(context, MaterialPageRoute(builder: (c) => const HomePage()));
+              Navigator.push(context, MaterialPageRoute(builder: (c) => MainScreen()));
 
             } else {
               Navigator.pop(context);
@@ -192,7 +201,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: 46,
-                    fontWeight: FontWeight.w900
+                    fontWeight: FontWeight.w600
                 ),
               ),
               const Text(
@@ -200,7 +209,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: 22,
-                    fontWeight: FontWeight.w300
+                    fontWeight: FontWeight.w400
                 ),
               ),
               Padding(
@@ -216,7 +225,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         labelStyle: const TextStyle(
                           fontSize: 14,
                           color: Colors.black87,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.normal,
                         ),
                         errorText: emailError.isEmpty ? null : emailError,
                         border: OutlineInputBorder(
@@ -224,7 +233,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.blue, width: 2),
+                          borderSide: const BorderSide(color: Colors.green, width: 2),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -243,7 +252,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         labelStyle: const TextStyle(
                           fontSize: 14,
                           color: Colors.black87,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.normal,
                         ),
                         errorText: passwordError.isEmpty ? null : passwordError,
                         border: OutlineInputBorder(
@@ -251,7 +260,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.blue, width: 2),
+                          borderSide: const BorderSide(color: Colors.green, width: 2),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -286,7 +295,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(
                         color: Colors.black45,
                         fontSize: 14,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -299,7 +308,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black87,
-                          padding: const EdgeInsets.symmetric(horizontal: 140, vertical: 15),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: MediaQuery.of(context).size.width * 0.35,
+                              vertical: 15
+                          ),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10)
                           )
@@ -309,7 +321,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
-                              fontWeight: FontWeight.bold
+                              fontWeight: FontWeight.w600
                           )
                       ),
                     ),
@@ -327,8 +339,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             TextSpan(
                               text: "Register",
                               style: const TextStyle(
-                                color: Colors.blue, // Different color for the clickable text
-                                fontWeight: FontWeight.bold, // Make the text bold
+                                color: Colors.green, // Different color for the clickable text
+                                fontWeight: FontWeight.normal, // Make the text bold
                               ),
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () {

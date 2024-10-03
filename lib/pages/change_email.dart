@@ -145,14 +145,20 @@ class _ChangeEmailPageState extends State<ChangeEmailPage> {
               obscureText: true,
               decoration: InputDecoration(
                 labelText: "Current Password",
-                prefixIcon: const Icon(Icons.lock),
+                prefixIcon: const Icon(
+                  Icons.lock,
+                  color: Colors.grey),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.0),
-                  borderSide: const BorderSide(color: Color.fromARGB(255, 204, 245, 215), width: 2.0),
+                  borderSide: const BorderSide(color: Colors.grey, width: 1.0), // Default gray color
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.0),
-                  borderSide: const BorderSide(color: Color.fromARGB(255, 204, 245, 215), width: 2.0),
+                  borderSide: const BorderSide(color: Colors.grey, width: 1.0), // Default gray color
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                  borderSide: const BorderSide(color: Colors.green, width: 2.0), // Green when focused
                 ),
               ),
             ),
@@ -162,14 +168,20 @@ class _ChangeEmailPageState extends State<ChangeEmailPage> {
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
                 labelText: "New Email Address",
-                prefixIcon: const Icon(Icons.email),
+                prefixIcon: const Icon(
+                    Icons.email,
+                    color: Colors.grey),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.0),
-                  borderSide: const BorderSide(color: Color.fromARGB(255, 204, 245, 215), width: 2.0),
+                  borderSide: BorderSide(color: Colors.grey, width: 1.0), // Default gray color
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.0),
-                  borderSide: const BorderSide(color: Color.fromARGB(255, 204, 245, 215), width: 2.0),
+                  borderSide: BorderSide(color: Colors.grey, width: 1.0), // Default gray color
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                  borderSide: BorderSide(color: Colors.green, width: 2.0), // Green when focused
                 ),
               ),
             ),

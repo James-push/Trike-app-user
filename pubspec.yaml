@@ -30,8 +30,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  googleapis: ^3.0.0
+  googleapis: ^13.2.0
   googleapis_auth: ^1.0.0
+  top_modal_sheet: ^2.1.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -55,23 +56,32 @@ dev_dependencies:
   firebase_storage: ^12.1.1
   cloud_functions: ^5.0.3
   firebase_analytics: ^11.2.0
-  image_picker: ^0.8.4+4
+  image_picker: ^1.1.2
   flutter_local_notifications: ^17.2.3
   shared_preferences: ^2.0.11
   get: ^4.6.5
+  connectivity_plus: ^6.0.5
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^3.0.0
+  flutter_lints: ^4.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
 flutter:
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-Bold.ttf
+        - asset: assets/fonts/Roboto-Black.ttf
+        - asset: assets/fonts/Roboto-Light.ttf
+          weight: 900
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

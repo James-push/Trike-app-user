@@ -1,15 +1,14 @@
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:user_application/methods/user_service.dart';
 import 'package:user_application/pages/profile_page.dart';
-
+import '../methods/custom_page_route.dart';
 import '../widgets/loading_dialog.dart';
-import 'about_page.dart'; // Ensure this path is correct
+import 'about_page.dart';
 
 class MenuPage extends StatelessWidget {
   const MenuPage({super.key});
-
-  final String? profileUrl = null; // Assume this value comes from user data (null means no profile picture)
 
   Future<String> fetchUserName() async {
     final userId = await UserService.instance.getCurrentUserId();
@@ -17,196 +16,194 @@ class MenuPage extends StatelessWidget {
       return 'Unknown User';
     }
 
-    final DatabaseReference userRef = FirebaseDatabase.instance.ref('users/$userId');
-    final DataSnapshot snapshot = await userRef.get();
-    if (snapshot.exists) {
-      final userData = snapshot.value as Map<dynamic, dynamic>;
-      return userData['name'] ?? 'Unknown User';
-    } else {
-      return 'Unknown User';
-    }
+    final DataSnapshot snapshot = await FirebaseDatabase.instance.ref('users/$userId').get();
+    return snapshot.exists && snapshot.value is Map<dynamic, dynamic>
+        ? (snapshot.value as Map<dynamic, dynamic>)['name'] ?? 'Unknown User'
+        : 'Unknown User';
   }
 
   Future<void> logOut(BuildContext context) async {
-
     showDialog(
-        context: context,
-        builder: (BuildContext context) => LoadingDialog(messageTxt: "Logging out...")
-
+      context: context,
+      builder: (context) => const LoadingDialog(messageTxt: "Please wait..."),
     );
-    // Introduce a small delay (e.g., 1 second) to ensure the dialog is displayed
+
     await Future.delayed(const Duration(seconds: 1));
 
     try {
       await UserService.instance.logout(context);
-      // Navigate to login or splash screen
-      Navigator.pushReplacementNamed(context, '/login'); //navigates to login screen
+      Navigator.pushReplacementNamed(context, '/login');
     } catch (e) {
       print("Error signing out: $e");
-      // Optionally show an error message
     }
+  }
+
+  void _showLogOutDialog(BuildContext context) {
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: const Text("Log Out"),
+        content: const Text("Are you sure you want to log out?"),
+        actions: <Widget>[
+          CupertinoDialogAction(
+            child: const Text("Cancel"),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          CupertinoDialogAction(
+            child: const Text("Yes"),
+            onPressed: () => logOut(context),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Drawer(
       child: Container(
-        color: const Color(0xffefefef), // Set the background color of the Drawer to grey
+        color: const Color(0xffefefef),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// Name & Profile Picture
-            Container(
-              width: double.infinity, // Full width of the drawer
-              height: 150, // Set a fixed height for the container
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16),
-              decoration: const BoxDecoration(
-                color: Colors.white, // Background color of the header
-                borderRadius: BorderRadius.all(Radius.circular(24.0)),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 22, // Adjust the size to fit
-                    backgroundColor: const Color(0xffefefef),
-                    backgroundImage: profileUrl != null
-                        ? NetworkImage(profileUrl!)
-                        : null, // Use the URL if available, otherwise show fallback
-                    child: profileUrl == null
-                        ? const Icon(Icons.person, size: 28, color: Colors.grey,) // Default fallback icon
-                        : null,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: FutureBuilder<String>(
-                      future: fetchUserName(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
-                        }
-                        if (snapshot.hasError) {
-                          return const Center(child: Text('Error fetching name'));
-                        }
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 2.0), // Adjust this value to move the name down
-                              child: InkWell(
-                                onTap: () {
-                                  // Handle name click
-                                  print('Name clicked');
-                                  // Navigate to a different page or perform an action
-                                },
-                                child: Text(
-                                  snapshot.data ?? 'Unknown User',
-                                  style: const TextStyle(color: Colors.black, fontSize: 18),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            InkWell(
-                              onTap: () {
-                                // Handle account click
-                                Navigator.push(context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ProfilePage(),
-                                    ));
-                                // Navigate to a different page or perform an action
-                              },
-                              child: const Text(
-                                'My Account',
-                                style: TextStyle(color: Colors.green),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
+            _buildHeader(context),
+            const SizedBox(height: 8),
+            _buildNavigationList(context),
+            const SizedBox(height: 8),
+            _buildLogOutSection(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 150,
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.all(Radius.circular(24.0)),
+      ),
+      child: Row(
+        children: [
+          const CircleAvatar(
+            radius: 22,
+            backgroundColor: Color(0xffefefef),
+            backgroundImage: null, // Replace with your profileUrl logic
+            child: Icon(Icons.person, size: 28, color: Colors.grey),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: FutureBuilder<String>(
+              future: fetchUserName(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return const Center(child: Text('Error fetching name'));
+                }
+                return _buildUserNameSection(snapshot.data);
+              },
             ),
+          ),
+        ],
+      ),
+    );
+  }
 
-            const SizedBox(height: 8), // Add spacing between header and list items
+  Widget _buildUserNameSection(String? userName) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        InkWell(
+          onTap: () => print('Name clicked'),
+          child: Text(
+            userName ?? 'Unknown User',
+            style: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const SizedBox(height: 4),
+        InkWell(
+          onTap: () {}, // Navigate to ProfilePage
+          child: const Text(
+            'My Account',
+            style: TextStyle(color: Colors.green),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
 
-            /// Drawer Navigation
-            Container(
-              decoration: const BoxDecoration(
-                color: Colors.white, // Background color for the list items
-                borderRadius: BorderRadius.all(Radius.circular(24.0)),
+  Widget _buildNavigationList(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.all(Radius.circular(24.0)),
+      ),
+      child: Column(
+        children: [
+          _buildListTile(context, Icons.notifications_none_rounded, 'Notification'),
+          _buildListTile(context, Icons.schedule_rounded, 'My Rides'),
+          _buildListTile(context, Icons.help_outline_rounded, 'Support'),
+          _buildAboutTile(context),
+        ],
+      ),
+    );
+  }
+
+  ListTile _buildListTile(BuildContext context, IconData icon, String title) {
+    return ListTile(
+      leading: SizedBox(
+        width: 40,
+        child: Icon(icon, color: Colors.black54),
+      ),
+      title: Text(title, style: const TextStyle(color: Colors.black87)),
+      onTap: () => print(title),
+    );
+  }
+
+  ListTile _buildAboutTile(BuildContext context) {
+    return ListTile(
+      leading: SizedBox(
+        width: 40,
+        child: const Icon(Icons.info_outline_rounded, color: Colors.black54),
+      ),
+      title: const Text('About', style: TextStyle(color: Colors.black87)),
+      onTap: () {
+        Navigator.push(
+          context,
+          CustomPageRoute(page: AboutPage()), // Use your custom route
+        );
+      },
+
+    );
+  }
+
+  Widget _buildLogOutSection(BuildContext context) {
+    return Expanded(
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.all(Radius.circular(24.0)),
+        ),
+        child: Column(
+          children: [
+            ListTile(
+              leading: const Padding(
+                padding: EdgeInsets.only(left: 10.0),
+                child: Icon(Icons.logout_rounded, color: Colors.black54),
               ),
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: const SizedBox(
-                      width: 40, // Adjust this value to add space to the left of the icon
-                      child: Icon(Icons.notifications_none_rounded, color: Colors.black54),
-                    ),
-                    title: const Text('Notification', style: TextStyle(color: Colors.black87)),
-                    onTap: () => print('Notification'),
-                  ),
-                  ListTile(
-                    leading: const SizedBox(
-                      width: 40, // Adjust this value to add space to the left of the icon
-                      child: Icon(Icons.schedule_rounded, color: Colors.black54),
-                    ),
-                    title: const Text('My Rides', style: TextStyle(color: Colors.black87)),
-                    onTap: () => print('My Rides'),
-                  ),
-                  ListTile(
-                    leading: const SizedBox(
-                      width: 40, // Adjust this value to add space to the left of the icon
-                      child: Icon(Icons.help_outline_rounded, color: Colors.black54),
-                    ),
-                    title: const Text('Support', style: TextStyle(color: Colors.black87)),
-                    onTap: () => print('Support'),
-                  ),
-                  ListTile(
-                    leading: const SizedBox(
-                      width: 40, // Adjust this value to add space to the left of the icon
-                      child: Icon(Icons.info_outline_rounded, color: Colors.black54),
-                    ),
-                    title: const Text('About', style: TextStyle(color: Colors.black87)),
-                    onTap: (){
-                      Navigator.push(context,
-                          MaterialPageRoute(
-                            builder: (context) => AboutPage(),
-                          ));
-                    },
-                  ),
-                ],
+              title: const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Text('Log out', style: TextStyle(color: Colors.black87)),
               ),
-            ),
-
-            const SizedBox(height: 8), // Add spacing between header and list items
-
-            /// 2nd Drawer Navigation (Expandable)
-            Expanded(
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white, // Background color for the list items
-                  borderRadius: BorderRadius.all(Radius.circular(24.0)),
-                ),
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: const Padding(
-                        padding: EdgeInsets.only(left: 10.0), // Adjust the left padding as needed
-                        child: Icon(Icons.logout_rounded, color: Colors.black54),
-                      ),
-                      title: const Padding(
-                        padding: EdgeInsets.only(left: 8.0), // Adjust the left padding as needed
-                        child: Text('Log out', style: TextStyle(color: Colors.black87)),
-                      ),
-                      onTap: () => logOut(context),
-                    ),
-                  ],
-                ),
-              ),
+              onTap: () => _showLogOutDialog(context),
             ),
           ],
         ),

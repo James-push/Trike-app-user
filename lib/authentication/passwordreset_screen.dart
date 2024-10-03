@@ -113,15 +113,21 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
               controller: userEmail,
               decoration: InputDecoration(
                 label: const Text("Email Address"),
-                prefixIcon: const Icon(Icons.email),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                  borderSide: const BorderSide(color: Color.fromARGB(255, 204, 245, 215), width: 2.0),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                  borderSide: const BorderSide(color: Color.fromARGB(255, 204, 245, 215), width: 2.0),
-                ),
+                prefixIcon: const Icon(
+                    Icons.email,
+                    color: Colors.grey,),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(color: Colors.grey, width: 1.0), // Default gray color
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(color: Colors.grey, width: 1.0), // Default gray color
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(color: Colors.green, width: 2.0), // Green when focused
+                  ),
               ),
               keyboardType: TextInputType.emailAddress,
             ),

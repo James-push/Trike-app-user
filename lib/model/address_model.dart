@@ -4,10 +4,12 @@ class AddressModel {
   double? longitudePosition;
   String? placeID;
   String? placeName;
-
-  // New fields to capture street and block
   String? street;
-  String? block;
+  String? houseNumber;
+  String? district;
+  String? city;
+  String? county;
+  String? postalCode;
 
   AddressModel({
     this.readableAddress,
@@ -15,7 +17,11 @@ class AddressModel {
     this.longitudePosition,
     this.placeID,
     this.placeName,
-    this.street,      // Add street
-    this.block,       // Add block
+    this.street,
+    this.houseNumber,
+    this.district,
+    this.city,
+    this.county,
+    this.postalCode
   });
 }

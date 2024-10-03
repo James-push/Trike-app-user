@@ -4,10 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:user_application/pages/menu_page.dart';
-import 'package:user_application/pages/profile_page.dart';
-import 'trips_page.dart';
 import '../global.dart';
-import '../methods/googlemap_methods.dart';
+import '../methods/geocoding_methods.dart';
+import 'package:user_application/widgets/top_modal_sheet.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,78 +14,97 @@ class HomePage extends StatefulWidget {
   @override
   State<HomePage> createState() => _HomePageState();
 }
-//change
 
 class _HomePageState extends State<HomePage> {
   double containerHeight = 100;
   double bottomPadding = 0;
+  int selectedIndex = 0;
+
   final Completer<GoogleMapController> googleMapCompleterController = Completer<GoogleMapController>();
   GoogleMapController? controllerGoogleMap;
   Position? currentPositionUser;
+
   GlobalKey<ScaffoldState> sKey = GlobalKey<ScaffoldState>();
 
-  int selectedIndex = 0;
-
-  // Controller for DraggableScrollableSheet
+  /// Controller for DraggableScrollableSheet
   final DraggableScrollableController _draggableController = DraggableScrollableController();
 
-  // Displaying the user's current location
+  /// Displaying the user's current location
   Future<void> getCurrentLocation() async {
     Position userPosition = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.bestForNavigation);
     currentPositionUser = userPosition;
 
     LatLng userLatLng = LatLng(currentPositionUser!.latitude, currentPositionUser!.longitude);
     CameraPosition positionCamera = CameraPosition(target: userLatLng, zoom: 18);
-    print("\n\nCoordinates: $userLatLng\n\n");
     controllerGoogleMap!.animateCamera(CameraUpdate.newCameraPosition(positionCamera));
-  }
-
-  void onItemTapped(int index) {
-    setState(() {
-      selectedIndex = index;
-    });
-
-    switch (index) {
-      case 0:
-      // Navigate to HomeScreen
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
-        break;
-      case 1:
-      // Navigate to Trips Screen
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const TripsScreen()),
-        );
-        break;
-      case 2:
-      // Navigate to ProfileScreen
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ProfilePage()),
-        );
-        break;
-    }
   }
 
   Future<void> onGPSButtonPressed() async {
     await getCurrentLocation();
 
     if (currentPositionUser != null) {
-      String readableAddress = await GoogleMapMethods.getReadableAddress(currentPositionUser!, context);
-      print("User's readable address: $readableAddress");
+      String readableAddress = await GeocodingMethods.getReadableAddress(currentPositionUser!, context);
+      if (mounted) {
+        print("User's readable address: $readableAddress");
+      }
     }
   }
 
-  // Expands the draggable bottom sheet when "Where to?" button is pressed
-  void _expandBottomSheet() {
-    _draggableController.animateTo(
-      0.8, // Expand to 80% of the screen height
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
+  ///top modal sheet
+  Future<void> _showCustomTopModal(BuildContext context) async {
+    await Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => TopModalSheet(
+          child: Stack(
+            children: [
+              Positioned(
+                top: MediaQuery.of(context).padding.top - 12,
+                left: 2,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.black87),
+                  onPressed: () {
+                    _draggableController.animateTo(
+                      0.1,
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOut,
+                    );
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        opaque: false,
+        barrierColor: Colors.transparent,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0, -1);
+          const end = Offset.zero;
+          const curve = Curves.easeInOut;
+
+          var tween = Tween<Offset>(begin: begin, end: end);
+          var offsetAnimation = animation.drive(tween.chain(CurveTween(curve: curve)));
+
+          return SlideTransition(
+            position: offsetAnimation,
+            child: child,
+          );
+        },
+      ),
     );
+  }
+
+  /// Expands the draggable bottom and top when "Where to?" button is pressed
+  void expandBottomTopSheet() async {
+    // Start both animations concurrently
+    await Future.wait([
+      _draggableController.animateTo(
+        1.0,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeInOut,
+      ),
+      _showCustomTopModal(context),
+    ]);
   }
 
   @override
@@ -116,8 +134,8 @@ class _HomePageState extends State<HomePage> {
               padding: EdgeInsets.only(top: 26, bottom: bottomPadding),
               mapType: MapType.normal,
               myLocationEnabled: true,
-              myLocationButtonEnabled: false, // Disable the built-in GPS button
-              zoomControlsEnabled: false, // Disable the built-in Zoom button
+              myLocationButtonEnabled: false,
+              zoomControlsEnabled: false,
               initialCameraPosition: kGooglePlex,
               onMapCreated: (GoogleMapController mapController) {
                 controllerGoogleMap = mapController;
@@ -132,22 +150,22 @@ class _HomePageState extends State<HomePage> {
             bottom: MediaQuery.of(context).padding.bottom + 122,
             right: 16,
             child: Container(
-              width: 46.0, // Standard size for a circular button
-              height: 46.0, // Standard size for a circular button
+              width: 46.0,
+              height: 46.0,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white, // Background color
+                color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black26, // Shadow color
-                    blurRadius: 8.0, // Blur radius
-                    spreadRadius: 0.2, // Spread radius
-                    offset: Offset(2, 6), // Offset of the shadow
+                    color: Colors.black26,
+                    blurRadius: 8.0,
+                    spreadRadius: 0.2,
+                    offset: Offset(2, 6),
                   ),
                 ],
               ),
               child: IconButton(
-                onPressed: onGPSButtonPressed,
+                onPressed: getCurrentLocation,
                 icon: const Icon(Icons.my_location, color: Colors.black),
               ),
             ),
@@ -155,27 +173,27 @@ class _HomePageState extends State<HomePage> {
 
           ///hamburger button
           Positioned(
-            top: 60.0, // Adjust this value as needed
-            left: 16.0, // Adjust this value as needed
+            top: 60.0,
+            left: 16.0,
             child: Container(
-              width: 46.0, // Standard size for a circular button
+              width: 46.0,
               height: 46.0,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white, // Background color of the circle
+                color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black26, // Shadow color
-                    blurRadius: 2.0, // Blur radius
-                    spreadRadius: 0.4, // Spread radius
-                    offset: Offset(0, 1), // Offset of the shadow
+                    color: Colors.black26,
+                    blurRadius: 2.0,
+                    spreadRadius: 0.4,
+                    offset: Offset(0, 1),
                   ),
                 ],
               ),
               child: IconButton(
-                icon: const Icon(Icons.menu, size: 24.0, color: Colors.black87), // Adjust icon color
+                icon: const Icon(Icons.menu, size: 24.0, color: Colors.black87),
                 onPressed: () {
-                  sKey.currentState?.openDrawer(); // Open the drawer
+                  sKey.currentState?.openDrawer();
                 },
               ),
             ),
@@ -184,19 +202,19 @@ class _HomePageState extends State<HomePage> {
           /// Draggable Scrollable Rounded Modal Bottom Sheet
           DraggableScrollableSheet(
             controller: _draggableController,
-            initialChildSize: 0.135, // Initial collapsed size
-            minChildSize: 0.135, // Minimum size when collapsed
-            maxChildSize: 0.8, // Maximum size when expanded
+            initialChildSize: 0.135,
+            minChildSize: 0.135,
+            maxChildSize: 1,
             builder: (BuildContext context, ScrollController scrollController) {
               return Container(
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Color(0x76000018), // Shadow color
-                      blurRadius: 8.0, // Blur radius
-                      spreadRadius: 3.0, // Spread radius
-                      offset: Offset(0, 4), // Offset of the shadow
+                      color: Color(0x76000018),
+                      blurRadius: 8.0,
+                      spreadRadius: 3.0,
+                      offset: Offset(0, 4),
                     ),
                   ],
                   borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
@@ -206,9 +224,9 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     /// "Where to?" button inside the bottom sheet
                     GestureDetector(
-                      onTap: _expandBottomSheet, // Expands the bottom sheet when pressed
+                      onTap: expandBottomTopSheet,
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 20), // Add padding at the top to move it up
+                        padding: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 20),
                         child: Container(
                           height: 50.0,
                           width: double.infinity,
@@ -216,14 +234,32 @@ class _HomePageState extends State<HomePage> {
                             borderRadius: BorderRadius.circular(8.0),
                             color: Colors.grey.shade200,
                           ),
-                          child: const Center(
-                            child: Text(
-                              'Where to?',
-                              style: TextStyle(
-                                fontSize: 18.0,
-                                fontWeight: FontWeight.w500,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.only(right: 8.0, left: 8.0),
+                                padding: const EdgeInsets.all(6.0),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.grey.shade300,
+                                ),
+                                child: const Icon(
+                                  Icons.search,
+                                  color: Colors.black54,
+                                ),
                               ),
-                            ),
+                              const Expanded(
+                                child: Text(
+                                  'Where to?',
+                                  style: TextStyle(
+                                    color: Colors.black54,
+                                    fontSize: 18.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -235,46 +271,6 @@ class _HomePageState extends State<HomePage> {
             },
           ),
         ],
-      ),
-
-      /// Bottom Navigation Bar
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Color(0x18000018), // Shadow color
-              blurRadius: 8.0, // Blur radius
-              spreadRadius: 3.0, // Spread radius
-              offset: Offset(0, 4), // Offset of the shadow
-            ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.history_outlined),
-              label: 'Trips',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.account_circle_outlined),
-              label: 'Profile',
-            ),
-          ],
-          currentIndex: selectedIndex,
-          selectedItemColor: Colors.black87,
-          unselectedItemColor: Colors.grey,
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          onTap: onItemTapped,
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white,
-          enableFeedback: false,
-        ),
       ),
     );
   }

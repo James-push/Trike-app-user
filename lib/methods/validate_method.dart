@@ -8,3 +8,4 @@ class SnackBarMethod
     ScaffoldMessenger.of(cxt).showSnackBar(sbar);
   }
 }
+
