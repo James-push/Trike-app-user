@@ -22,6 +22,5 @@ class AddressModel {
     this.district,
     this.city,
     this.county,
-    this.postalCode
   });
 }

@@ -11,14 +11,6 @@ import '../methods/custom_page_route.dart';
 import '../methods/fetchUserData.dart';
 import '../widgets/error_dialog.dart';
 
-// Error dialog
-void showErrorDialog(BuildContext context, String message) {
-  showDialog(
-    context: context,
-    builder: (context) => ErrorDialog(messageTxt: message),
-  );
-}
-
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
 
@@ -135,7 +127,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
             const SnackBar(content: Text('Profile picture updated successfully!')),
           );
         } catch (e) {
-          showErrorDialog(context, "Failed to upload profile picture: $e");
+          showDialog(
+            context: context,
+            builder: (context) {
+              return ErrorDialog(
+                titlemessageTxt: "Oops! Update Failed.",
+                messageTxt: "It seems something went wrong while updating your image. Please try again.",
+                icon: Icons.hide_image_outlined, // Icon of your choice
+                iconSize: 40, // Example of setting a larger icon size
+              );
+            },
+          );
         }
       }
     }
@@ -200,12 +202,32 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     } on FirebaseAuthException catch (e) {
                       // Handle incorrect password
                       print("Re-authentication failed: ${e.message}");
-                      showErrorDialog(context, "Incorrect password. Please try again.");
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return ErrorDialog(
+                            titlemessageTxt: "Oops! Wrong Password",
+                            messageTxt: "It looks like the password you entered is incorrect. Please double-check and try again.",
+                            icon: Icons.lock_outlined, // Icon of your choice
+                            iconSize: 40, // Example of setting a larger icon size
+                          );
+                        },
+                      );
                     }
                   }
                 } else {
                   // If password field is empty
-                  showErrorDialog(context, "Please enter your password.");
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return ErrorDialog(
+                        titlemessageTxt: "Password Required.",
+                        messageTxt: "Please enter your password to continue.",
+                        icon: Icons.warning_amber_rounded, // Icon of your choice
+                        iconSize: 40, // Example of setting a larger icon size
+                      );
+                    },
+                  );
                 }
               },
             ),
@@ -219,7 +241,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       // User is not logged in
-      showErrorDialog(context, "User is not logged in.");
+      showDialog(
+        context: context,
+        builder: (context) {
+          return ErrorDialog(
+            titlemessageTxt: "Access Denied.",
+            messageTxt: "Please log in to access your account.",
+            icon: Icons.no_accounts_outlined, // Icon of your choice
+            iconSize: 40, // Example of setting a larger icon size
+          );
+        },
+      );
       return;
     }
 
@@ -241,51 +273,20 @@ class _EditProfilePageState extends State<EditProfilePage> {
     } catch (e) {
       // Handle errors
       print("Error updating profile: $e");
-      showErrorDialog(context, "Error updating profile. Please try again.");
+      showDialog(
+        context: context,
+        builder: (context) {
+          return ErrorDialog(
+            titlemessageTxt: "Profile Update Failed.",
+            messageTxt: "We encountered an issue while updating your profile. Please try again or check your internet connection",
+            icon: Icons.warning_amber_rounded, // Icon of your choice
+            iconSize: 40, // Example of setting a larger icon size
+          );
+        },
+      );
     }
   }
 
-  Future<void> _showErrorDialog(String message) {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Error"),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              child: const Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _showSuccessDialog(String message) {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Success"),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              child: const Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the success dialog
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {

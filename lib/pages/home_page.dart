@@ -8,8 +8,12 @@ import '../global.dart';
 import '../methods/geocoding_methods.dart';
 import 'package:user_application/widgets/top_modal_sheet.dart';
 
+import '../methods/location_service.dart';
+
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final GlobalKey<ScaffoldState> scaffoldKey;
+  final Function(bool) onNavBarVisibilityChanged; // Callback to change nav bar visibility
+  const HomePage({Key? key, required this.onNavBarVisibilityChanged, required this.scaffoldKey}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -19,6 +23,7 @@ class _HomePageState extends State<HomePage> {
   double containerHeight = 100;
   double bottomPadding = 0;
   int selectedIndex = 0;
+  bool _isBottomNavBarVisible = true; // State for bottom nav bar visibility
 
   final Completer<GoogleMapController> googleMapCompleterController = Completer<GoogleMapController>();
   GoogleMapController? controllerGoogleMap;
@@ -28,6 +33,9 @@ class _HomePageState extends State<HomePage> {
 
   /// Controller for DraggableScrollableSheet
   final DraggableScrollableController _draggableController = DraggableScrollableController();
+
+  ///Visibility for navBar
+  bool isBottomNavBarVisible = true; // Manage the visibility state
 
   /// Displaying the user's current location
   Future<void> getCurrentLocation() async {
@@ -63,6 +71,7 @@ class _HomePageState extends State<HomePage> {
                 child: IconButton(
                   icon: const Icon(Icons.close, color: Colors.black87),
                   onPressed: () {
+                    widget.onNavBarVisibilityChanged(true); // Show the navbar
                     _draggableController.animateTo(
                       0.1,
                       duration: const Duration(milliseconds: 250),
@@ -94,17 +103,29 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// Expands the draggable bottom and top when "Where to?" button is pressed
+  /// Expands the draggable bottom and top and validates user's current location when "Where to?" button is pressed
   void expandBottomTopSheet() async {
-    // Start both animations concurrently
-    await Future.wait([
-      _draggableController.animateTo(
-        1.0,
-        duration: const Duration(milliseconds: 350),
-        curve: Curves.easeInOut,
-      ),
-      _showCustomTopModal(context),
-    ]);
+    LocationService locationService = LocationService();
+    // Check if the user is within the allowed vicinity
+    bool isInVicinity = await locationService.checkUserLocation(context);
+
+
+    // Proceed only if the user is within the allowed vicinity
+    if (isInVicinity) {
+      print("Where to Tapped");
+      widget.onNavBarVisibilityChanged(false); // Hide the navbar
+
+      // Start both animations concurrently
+      await Future.wait([
+        _draggableController.animateTo(
+          1.0,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeInOut,
+        ),
+        _showCustomTopModal(context),
+      ]);
+    }
+    // No else needed, as the dialog should already be shown in checkUserLocation method
   }
 
   @override
@@ -171,34 +192,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
 
-          ///hamburger button
-          Positioned(
-            top: 60.0,
-            left: 16.0,
-            child: Container(
-              width: 46.0,
-              height: 46.0,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 2.0,
-                    spreadRadius: 0.4,
-                    offset: Offset(0, 1),
-                  ),
-                ],
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.menu, size: 24.0, color: Colors.black87),
-                onPressed: () {
-                  sKey.currentState?.openDrawer();
-                },
-              ),
-            ),
-          ),
-
           /// Draggable Scrollable Rounded Modal Bottom Sheet
           DraggableScrollableSheet(
             controller: _draggableController,
@@ -212,7 +205,7 @@ class _HomePageState extends State<HomePage> {
                   boxShadow: [
                     BoxShadow(
                       color: Color(0x76000018),
-                      blurRadius: 8.0,
+                      blurRadius:8.0,
                       spreadRadius: 3.0,
                       offset: Offset(0, 4),
                     ),
@@ -224,7 +217,9 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     /// "Where to?" button inside the bottom sheet
                     GestureDetector(
-                      onTap: expandBottomTopSheet,
+                      onTap: () {
+                        expandBottomTopSheet(); // Call your existing method
+                      },
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 20),
                         child: Container(

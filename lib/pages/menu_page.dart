@@ -2,7 +2,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:user_application/methods/user_service.dart';
-import 'package:user_application/pages/profile_page.dart';
+import 'package:user_application/widgets/logout_dialog.dart';
 import '../methods/custom_page_route.dart';
 import '../widgets/loading_dialog.dart';
 import 'about_page.dart';
@@ -36,26 +36,6 @@ class MenuPage extends StatelessWidget {
     } catch (e) {
       print("Error signing out: $e");
     }
-  }
-
-  void _showLogOutDialog(BuildContext context) {
-    showCupertinoDialog(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const Text("Log Out"),
-        content: const Text("Are you sure you want to log out?"),
-        actions: <Widget>[
-          CupertinoDialogAction(
-            child: const Text("Cancel"),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          CupertinoDialogAction(
-            child: const Text("Yes"),
-            onPressed: () => logOut(context),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -203,7 +183,7 @@ class MenuPage extends StatelessWidget {
                 padding: EdgeInsets.only(left: 8.0),
                 child: Text('Log out', style: TextStyle(color: Colors.black87)),
               ),
-              onTap: () => _showLogOutDialog(context),
+              onTap: () => LogoutDialog.showLogoutDialog(context),
             ),
           ],
         ),

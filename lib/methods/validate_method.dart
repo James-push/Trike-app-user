@@ -1,11 +1,18 @@
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
 
-class SnackBarMethod
+class ToastMethod
 {
-  showSnackBarMsg(String msg, BuildContext cxt)
+  showToastMsg(String msg, BuildContext cxt)
   {
-    var sbar = SnackBar(content: Text(msg));
-    ScaffoldMessenger.of(cxt).showSnackBar(sbar);
+    Fluttertoast.showToast(
+      msg: msg,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM, // You can change this to TOP, CENTER, etc.
+      backgroundColor: Colors.black,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
   }
 }
 

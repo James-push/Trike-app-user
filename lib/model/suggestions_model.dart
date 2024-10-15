@@ -16,8 +16,21 @@ class SuggestionsModel {
   SuggestionsModel.fromJson(Map<String, dynamic> json) {
     id = json["id"]; // Place ID in HERE API
     title = json["title"]; // The main place name or title
-    address = json["address"]["label"]; // Full address text
-    lat = json["position"]["lat"]; // Latitude
-    lng = json["position"]["lng"]; // Longitude
+
+    // Check if address exists and has a label
+    if (json["address"] != null && json["address"]["label"] != null) {
+      address = json["address"]["label"]; // Full address text
+    } else {
+      address = "Address not available"; // Default message or handle null
+    }
+
+    // Ensure position is present before accessing lat/lng
+    if (json["position"] != null) {
+      lat = json["position"]["lat"]; // Latitude
+      lng = json["position"]["lng"]; // Longitude
+    } else {
+      lat = null; // or a default value
+      lng = null; // or a default value
+    }
   }
 }

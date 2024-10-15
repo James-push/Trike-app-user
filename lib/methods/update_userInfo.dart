@@ -2,14 +2,24 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import '../authentication/login_screen.dart';
+import '../widgets/error_dialog.dart';
 
 // This function is now public and can be accessed from other files
 Future<void> updateUserInfo(BuildContext context, TextEditingController nameController, TextEditingController emailController, TextEditingController phoneController) async {
   User? user = FirebaseAuth.instance.currentUser;
   if (user == null) {
     // User is not logged in
-    showErrorDialog(context, "User is not logged in.");
+    showDialog(
+      context: context,
+      builder: (context) {
+        return ErrorDialog(
+          titlemessageTxt: "Access Denied.",
+          messageTxt: "Please log in to access your account.",
+          icon: Icons.no_accounts_outlined, // Icon of your choice
+          iconSize: 40, // Example of setting a larger icon size
+        );
+      },
+    );
     return;
   }
 
@@ -34,7 +44,17 @@ Future<void> updateUserInfo(BuildContext context, TextEditingController nameCont
       if (!user.emailVerified) {
         // Send verification email
         await user.sendEmailVerification();
-        showErrorDialog(context, "Please verify your email before changing it. A verification email has been sent.");
+        showDialog(
+          context: context,
+          builder: (context) {
+            return ErrorDialog(
+              titlemessageTxt: "Email Verification Required",
+              messageTxt: "We've sent a verification email to your address. Please check your inbox and verify your email before making any changes.",
+              icon: Icons.email_outlined, // Icon of your choice
+              iconSize: 40, // Example of setting a larger icon size
+            );
+          },
+        );
         return;
       }
 
@@ -49,6 +69,16 @@ Future<void> updateUserInfo(BuildContext context, TextEditingController nameCont
   } catch (e) {
     // Handle errors
     print("Error updating profile: $e");
-    showErrorDialog(context, "Error updating profile. Please try again.");
+    showDialog(
+      context: context,
+      builder: (context) {
+        return ErrorDialog(
+          titlemessageTxt: "Profile Update Failed.",
+          messageTxt: "We encountered an issue while updating your profile. Please try again or check your internet connection",
+          icon: Icons.warning_amber_rounded, // Icon of your choice
+          iconSize: 40, // Example of setting a larger icon size
+        );
+      },
+    );
   }
 }

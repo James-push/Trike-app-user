@@ -6,11 +6,24 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:user_application/appInfo/app_info.dart';
 import 'package:user_application/authentication/login_screen.dart';
-import 'package:user_application/widgets/bottom_navigation_bar.dart';
+import 'package:user_application/pages/order_tracking_state_page.dart';
+import 'package:user_application/widgets/main_screen.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize Firebase and handle potential errors
+  await _initializeFirebase();
+
+  // Check and request location permissions
+  await _checkAndRequestLocationPermission();
+
+  // Run the app
+  runApp(const MyApp());
+}
+
+Future<void> _initializeFirebase() async {
   try {
     if (Platform.isAndroid) {
       await Firebase.initializeApp(
@@ -31,16 +44,18 @@ void main() async {
   } catch (e) {
     print("Error initializing Firebase: $e");
   }
-
-  await _checkAndRequestLocationPermission();
-
-  runApp(const MyApp());
 }
 
 Future<void> _checkAndRequestLocationPermission() async {
-  final status = await Permission.locationWhenInUse.status;
-  if (status.isDenied) {
-    await Permission.locationWhenInUse.request();
+  PermissionStatus status = await Permission.locationWhenInUse.status;
+
+  if (status.isDenied || status.isRestricted) {
+    status = await Permission.locationWhenInUse.request();
+  }
+
+  if (status.isPermanentlyDenied) {
+    // Open the app settings to manually allow location permission
+    await openAppSettings();
   }
 }
 

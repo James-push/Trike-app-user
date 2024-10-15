@@ -5,7 +5,8 @@ import 'package:user_application/global.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:user_application/widgets/loading_dialog.dart';
-import 'package:user_application/pages/home_page.dart';
+import '../methods/signInWithGoogle.dart';
+import '../widgets/main_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -20,6 +21,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   TextEditingController emailTextEditingController = TextEditingController();
   TextEditingController passwordTextEditingController = TextEditingController();
 
+
   String nameError = '';
   String phoneError = '';
   String emailError = '';
@@ -28,22 +30,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   bool isPasswordVisible = false; // Add this boolean to track the password visibility
 
   TextEditingController confirmPasswordTextEditingController = TextEditingController();
-
   String confirmPasswordError = ''; // Add error for confirm password field
 
-  validateSignUpForm() {
+  validateSignUpForm() async {
     final String name = userNameTextEditingController.text.trim();
     final String phone = userPhoneTextEditingController.text.trim();
     final String email = emailTextEditingController.text.trim();
     final String password = passwordTextEditingController.text.trim();
     final String confirmPassword = confirmPasswordTextEditingController.text.trim();
 
-
     // RegEx patterns
     final RegExp nameRegExp = RegExp(r'^[a-zA-Z ]{3,}$');
     final RegExp emailRegExp = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
     final RegExp passwordRegExp = RegExp(r'^(?=.*[A-Z])(?=.*[!@#\$&*~.])(?=.*[0-9])(?=.*[a-z]).{8,}$');
-
 
     setState(() {
       nameError = '';
@@ -120,10 +119,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       await FirebaseDatabase.instance.ref().child("users").child(firebaseUser.uid).set(userDataMap);
 
       Navigator.pop(context);
-      snackBar.showSnackBarMsg("Account created successfully", context);
+      toast.showToastMsg("Account created successfully", context);
 
       // Redirects user to homepage if user's account is valid
-      Navigator.push(context, MaterialPageRoute(builder: (c) => const HomePage()));
+      Navigator.push(context, MaterialPageRoute(builder: (c) => MainScreen()));
     } on FirebaseAuthException catch (ex) {
       FirebaseAuth.instance.signOut();
       Navigator.pop(context);
@@ -140,27 +139,37 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 52,),
-              Image.asset(
-                "assets/images/signup.webp",
-                width: MediaQuery.of(context).size.width * .6,
+              const SizedBox(height: 50,),
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.pop(context); // Navigate back to the previous screen
+                },
               ),
-              const SizedBox(height: 10,),
-              const Text(
-                "Hello!",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 46,
-                    fontWeight: FontWeight.w900
+              const SizedBox(height: 40),
+              Container(
+                padding: EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.05), // 5% padding from the left
+                child: const Text(
+                  "Sign Up",
+                  textAlign: TextAlign.left, // Align to the left
+                  style: TextStyle(
+                      fontSize: 46,
+                      fontWeight: FontWeight.w600
+                  ),
                 ),
               ),
-              const Text(
-                "Create new Account",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w300
+              Container(
+                padding: EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.05), // 5% padding from the left
+                child: const Text(
+                  "Lorem Ipsum is simply dummy text of the\nLorem Ipsum has been the industry's",
+                  textAlign: TextAlign.left, // Align to the left
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.grey
+                  ),
                 ),
               ),
               Padding(
@@ -271,7 +280,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                            isPasswordVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
                             color: Colors.grey,
                           ),
                           onPressed: () {
@@ -310,7 +319,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                            isPasswordVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
                             color: Colors.grey,
                           ),
                           onPressed: () {
@@ -322,14 +331,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 42,),
+                    const SizedBox(height: 40),
                     // Register button
                     ElevatedButton(
                       onPressed: () {
                         validateSignUpForm();
                       },
                       style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black87,
+                          backgroundColor: Colors.green.shade400,
                           padding: EdgeInsets.symmetric(
                               horizontal: MediaQuery.of(context).size.width * 0.335,
                               vertical: 15
@@ -339,43 +348,96 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           )
                       ),
                       child: const Text(
-                          "Register",
+                          "Sign Up",
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
-                              fontWeight: FontWeight.w600)),
+                              fontWeight: FontWeight.w400)),
                     )
                   ],
                 ),
               ),
 
-              const SizedBox(height: 0.1),
+              const SizedBox(height: 10),
 
-              //Text Button that redirects users with existing account to log in screen
-              TextButton(
-                onPressed: null, // No action needed for the button itself
-                child: RichText(
-                  text: TextSpan(
-                    text: "Already have an account? ",
-                    style: const TextStyle(
-                      color: Colors.grey, // Style for the first part of the text
-                    ),
-                    children: <TextSpan>[
-                      TextSpan(
-                        text: "Login here",
-                        style: const TextStyle(
-                          color: Colors.green, // Different color for the clickable text
-                          fontWeight: FontWeight.normal, // Make the text bold
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center, // Center the content horizontally
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Text(
+                            "Or Sign up with",
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 16,),
+
+                          ),
                         ),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            Navigator.push(context, MaterialPageRoute(builder: (c) => const LoginScreen()));
-                          },
+                      ],
+                    ),
+                    const SizedBox(height: 30),
+                    OutlinedButton(
+                      onPressed: () {
+                        AuthService.signInWithGoogle(context);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: Colors.grey.shade200, // Set background color
+                        minimumSize: const Size(50, 50), // Adjust size for icon-only button
+                        padding: const EdgeInsets.all(8), // Adjust padding
+                        side: const BorderSide(
+                          color: Colors.transparent, // Optional: keep border the same as background
+                          width: 1,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                    ],
+                      child: Image.asset(
+                        "assets/images/google_icon.webp",
+                        width: 24,
+                        height: 24,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 60),
+              //Text Button that redirects users with existing account to log in screen
+              Align(
+                alignment: Alignment.center, // Align the button to the right
+                child: TextButton(
+                  onPressed: null, // No action needed for the button itself
+                  child: RichText(
+                    text: TextSpan(
+                      text: "Already have an account? ",
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontSize: 14, // Style for the first part of the text
+                      ),
+                      children: <TextSpan>[
+                        TextSpan(
+                          text: "Sign In",
+                          style: const TextStyle(
+                            color: Colors.green, // Different color for the clickable text
+                            fontWeight: FontWeight.w200, // Make the text bold
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (c) => const LoginScreen()));
+                            },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               )
+
             ],
           ),
         ),

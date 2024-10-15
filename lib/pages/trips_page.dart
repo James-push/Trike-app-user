@@ -1,18 +1,9 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:user_application/pages/home_page.dart';
-import 'package:user_application/pages/profile_page.dart';
 import '../methods/user_service.dart';
 import '../widgets/error_dialog.dart';
 
-// Error dialog
-void showErrorDialog(BuildContext context, String message) {
-  showDialog(
-    context: context,
-    builder: (context) => ErrorDialog(messageTxt: message),
-  );
-}
 
 class TripsPage extends StatefulWidget {
   const TripsPage({super.key});

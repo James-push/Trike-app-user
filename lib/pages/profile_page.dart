@@ -11,14 +11,8 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../widgets/logout_dialog.dart';
 
-// Error dialog
-void showErrorDialog(BuildContext context, String message) {
-  showDialog(
-    context: context,
-    builder: (context) => ErrorDialog(messageTxt: message),
-  );
-}
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -116,29 +110,6 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     fetchUserData.fetchUserName(); // Fetch user's full name on widget load
-  }
-
-  // Function to show the log-out confirmation dialog
-  void _showLogOutDialog() {
-    showCupertinoDialog(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const Text("Log Out"),
-        content: const Text("Are you sure you want to log out?"),
-        actions: <Widget>[
-          CupertinoDialogAction(
-            child: const Text("Cancel"),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          CupertinoDialogAction(
-            child: const Text("Yes"),
-            onPressed: () => logOut(context),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -478,9 +449,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                       ),
                                     ),
                                   ),
-                                  onTap: () {
-                                    _showLogOutDialog();
-                                  },
+                                  onTap: () => LogoutDialog.showLogoutDialog(context),
                                 )
                               ],
                             ),

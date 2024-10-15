@@ -5,10 +5,14 @@ import 'package:user_application/authentication/passwordreset_screen.dart';
 import 'package:user_application/authentication/registration_screen.dart';
 import 'package:flutter/gestures.dart';
 import 'package:user_application/global.dart';
-import 'package:user_application/widgets/bottom_navigation_bar.dart';
+import 'package:user_application/widgets/main_screen.dart';
 import 'package:user_application/widgets/error_dialog.dart';
 import 'package:user_application/widgets/loading_dialog.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/services.dart';
+
+import '../methods/signInWithGoogle.dart';
+
 
 
 class LoginScreen extends StatefulWidget {
@@ -16,14 +20,6 @@ class LoginScreen extends StatefulWidget {
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
-}
-
-// Error dialog
-void showErrorDialog(BuildContext context, String message) {
-  showDialog(
-    context: context,
-    builder: (context) => ErrorDialog(messageTxt: message),
-  );
 }
 
 class _LoginScreenState extends State<LoginScreen> {
@@ -35,6 +31,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String emailError = '';
   String passwordError = '';
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Overlay the status bar and navigation bar
+   // SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
+    // Optionally, you can also hide the status bar with the code below:
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+       statusBarColor: Colors.transparent, // Transparent status bar
+       systemNavigationBarColor: Colors.transparent, // Transparent navigation bar
+     ));
+  }
+
+  @override
+  void dispose() {
+    // Reset the system UI when leaving the screen
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    super.dispose();
+  }
 
   validateLogInForm() async {
     final String email = emailTextEditingController.text.trim();
@@ -68,7 +85,17 @@ class _LoginScreenState extends State<LoginScreen> {
     // Check for internet connectivity
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
-      showErrorDialog(context, "No internet connection. Please check your connection and try again.");
+      showDialog(
+        context: context,
+        builder: (context) {
+          return ErrorDialog(
+            titlemessageTxt: "No Internet Connection.",
+            messageTxt: "Couldn't connect to app. Please check your connection and try again.",
+            icon: Icons.signal_wifi_statusbar_connected_no_internet_4_rounded, // Icon of your choice
+            iconSize: 60, // Example of setting a larger icon size
+          );
+        },
+      );
       return; // Exit early if there's no connection
     }
 
@@ -85,7 +112,17 @@ class _LoginScreenState extends State<LoginScreen> {
             emailError = "Incorrect email or password.";
             passwordError = "Incorrect email or password.";
           } else {
-            showErrorDialog(context, "An error occurred. Please try again.");
+            showDialog(
+              context: context,
+              builder: (context) {
+                return ErrorDialog(
+                  titlemessageTxt: "An error occurred.",
+                  messageTxt: "Unexpected error occurred. Please try again later.",
+                  icon: Icons.error_outline_rounded, // Icon of your choice
+                  iconSize: 60, // Example of setting a larger icon size
+                );
+              },
+            );
           }
         });
       }
@@ -124,19 +161,60 @@ class _LoginScreenState extends State<LoginScreen> {
                   passwordError = "Incorrect password. Please try again.";
                   break;
                 case 'network-request-failed':
-                  showErrorDialog(context, "Connection error. Please check your internet connection and try again.");
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return ErrorDialog(
+                        titlemessageTxt: "Connection Error",
+                        messageTxt: "Please check your internet connection and try again..",
+                        icon: Icons.signal_wifi_bad_rounded, // Icon of your choice
+                        iconSize: 60, // Example of setting a larger icon size
+                      );
+                    },
+                  );
                   break;
                 case 'too-many-requests':
-                  showErrorDialog(context, "Your account has been temporarily disabled due to multiple failed login attempts. Please try again later.");
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return ErrorDialog(
+                        titlemessageTxt: "Too Many Attempts.",
+                        messageTxt: "Your account has been temporarily disabled due to multiple failed login attempts. Please try again later.",
+                        icon: Icons.lock_outline_rounded, // Icon of your choice
+                        iconSize: 60, // Example of setting a larger icon size
+                      );
+                    },
+                  );
                 default:
-                  showErrorDialog(context, "An error occurred. Please try again.");
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return ErrorDialog(
+                        titlemessageTxt: "An Error Occurred",
+                        messageTxt: "There was an unexpected error occurred. Please try again.",
+                        icon: Icons.error_outline_rounded, // Icon of your choice
+                        iconSize: 60, // Example of setting a larger icon size
+                      );
+                    },
+                  );
                   break;
 
               }
             } else {
               // Handle any other errors
               setState(() {
-                showErrorDialog(context, "An unexpected error occurred. Please try again.");
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return ErrorDialog(
+                      titlemessageTxt: "An Error Occurred",
+                      messageTxt: "There was an unexpected error occurred. Please try again.",
+                      icon: Icons.error_outline_rounded, // Icon of your choice
+                      iconSize: 60, // Example of setting a larger icon size
+                    );
+                  },
+                );
+
               });
             }
           })
@@ -151,7 +229,7 @@ class _LoginScreenState extends State<LoginScreen> {
               userName = (dataSnapshot.snapshot.value as Map)["name"];
               userPhone = (dataSnapshot.snapshot.value as Map)["phone"];
 
-              snackBar.showSnackBarMsg("Logged in Successfully", context);
+              toast.showToastMsg("Logged in Successfully", context);
               // Redirects user to homepage if user's account is not blocked
               Navigator.push(context, MaterialPageRoute(builder: (c) => MainScreen()));
 
@@ -188,30 +266,41 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 52,),
-              Image.asset(
-                "assets/images/signin.webp",
-                width: MediaQuery.of(context).size.width * .6,
+              const SizedBox(height: 50,),
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.pop(context); // Navigate back to the previous screen
+                },
               ),
-              const SizedBox(height: 10,),
-              const Text(
-                "Hello!",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 46,
-                    fontWeight: FontWeight.w600
+              const SizedBox(height: 40),
+              // Use a Container with padding for the text
+              Container(
+                padding: EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.05), // 5% padding from the left
+                child: const Text(
+                  "Sign In",
+                  textAlign: TextAlign.left, // Align to the left
+                  style: TextStyle(
+                      fontSize: 46,
+                      fontWeight: FontWeight.w600
+                  ),
                 ),
               ),
-              const Text(
-                "Sign into your Account",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w400
+              Container(
+                padding: EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.05), // 5% padding from the left
+                child: const Text(
+                  "Lorem Ipsum is simply dummy text of the\nLorem Ipsum has been the industry's",
+                  textAlign: TextAlign.left, // Align to the left
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.grey
+                  ),
                 ),
               ),
+              const SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.all(22),
                 child: Column(
@@ -268,7 +357,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                            isPasswordVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
                             color: Colors.grey,
                           ),
                           onPressed: () {
@@ -293,21 +382,21 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: const Text(
                       "Forgot Password?",
                       style: TextStyle(
-                        color: Colors.black45,
+                        color: Colors.green,
                         fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
                 ),
-                    const SizedBox(height: 62,),
+                    const SizedBox(height: 30,),
                     // Log in button
                     ElevatedButton(
                       onPressed: () {
                         validateLogInForm();
                       },
                       style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black87,
+                          backgroundColor: Colors.green.shade400,
                           padding: EdgeInsets.symmetric(
                               horizontal: MediaQuery.of(context).size.width * 0.35,
                               vertical: 15
@@ -317,15 +406,66 @@ class _LoginScreenState extends State<LoginScreen> {
                           )
                       ),
                       child: const Text(
-                          "Log in",
+                          "Sign In",
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
-                              fontWeight: FontWeight.w600
+                              fontWeight: FontWeight.w400
                           )
                       ),
                     ),
-                    const SizedBox(height: 10,),
+                    const SizedBox(height: 30),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center, // Center the content horizontally
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Text(
+                                  "Or Sign in with",
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 16,),
+
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 30),
+
+                          OutlinedButton(
+                            onPressed: () {
+                              AuthService.signInWithGoogle(context);
+                            },
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: Colors.grey.shade200, // Set background color
+                              minimumSize: const Size(50, 50), // Adjust size for icon-only button
+                              padding: const EdgeInsets.all(8), // Adjust padding
+                              side: const BorderSide(
+                                color: Colors.transparent, // Optional: keep border the same as background
+                                width: 1,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Image.asset(
+                              "assets/images/google_icon.webp",
+                              width: 24,
+                              height: 24,
+                            ),
+                          ),
+
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 170),
                     // Sign up link
                     TextButton(
                       onPressed: null, // No action needed for the button itself
@@ -333,18 +473,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         text: TextSpan(
                           text: "Don't have an account? ",
                           style: const TextStyle(
-                            color: Colors.grey, // Style for the first part of the text
+                            color: Colors.black87, // Style for the first part of the text
                           ),
                           children: <TextSpan>[
                             TextSpan(
-                              text: "Register",
+                              text: "Sign Up",
                               style: const TextStyle(
                                 color: Colors.green, // Different color for the clickable text
                                 fontWeight: FontWeight.normal, // Make the text bold
                               ),
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (c) => const RegistrationScreen()));
+                                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (c) => const RegistrationScreen()));
                                 },
                             ),
                           ],
