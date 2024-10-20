@@ -1,14 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import '../appInfo/app_info.dart';
 import '../global.dart';
+import '../methods/fetchUserData.dart';
 import '../methods/geocoding_methods.dart';
 import '../methods/polyline_service.dart';
+import '../methods/push_notification_service.dart';
 import '../model/address_model.dart';
 import '../model/suggestions_model.dart';
 import '../widgets/suggestions_places_ui.dart';
@@ -109,6 +112,16 @@ class _OrderTrackingStatePageState extends State<OrderTrackingStatePage> {
     setState(() {
 
     });
+  }
+
+  void requestRide(BuildContext context) async {
+
+    // Send notification using PushNotificationService
+    PushNotificationService.sendNewRequestRideNotification(
+      widget.pickupAddress.readableAddress,
+      widget.destinationAddress.readableAddress,
+      context,
+    );
   }
 
   @override
@@ -225,6 +238,24 @@ class _OrderTrackingStatePageState extends State<OrderTrackingStatePage> {
     print('Updated destination: $placeName');
     setState(() {
       widget.destinationAddress.readableAddress = placeName;
+    });
+  }
+
+  void onButtonClick() async {
+    DatabaseReference ref = FirebaseDatabase.instance.ref().child('notifications');
+    String name = await fetchUserData.fetchUserName();
+    String? uid = fetchUserData.fetchCurrentUserId();
+
+
+    // Create a unique key for each notification
+    String? key = ref.push().key;
+    await ref.child(key!).set({
+      'userId': uid, // identifier for the user
+      'name' : name,
+      'message': '$name is looking for a ride!',
+      'pickUpAddress' : widget.pickupAddress.readableAddress,
+      'destinationAddress' : widget.destinationAddress.readableAddress,
+      'timestamp': ServerValue.timestamp,
     });
   }
 
@@ -468,7 +499,8 @@ class _OrderTrackingStatePageState extends State<OrderTrackingStatePage> {
                         width: MediaQuery.of(context).size.width * 0.9,
                         child: ElevatedButton(
                           onPressed: () {
-                            print("Request Ride button pressed!");
+                            requestRide(context);
+                            onButtonClick();
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF00BF63),

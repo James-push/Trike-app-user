@@ -20,6 +20,11 @@ class fetchUserData{
     }
   }
 
+  static String? fetchCurrentUserId() {
+    User? user = FirebaseAuth.instance.currentUser;
+    return user?.uid; // Returns the UID or null if the user is not logged in
+  }
+
   static Future<String> fetchUserEmail() async {
     final userId = await UserService.instance.getCurrentUserId();
     if (userId == null) {

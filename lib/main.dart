@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +10,8 @@ import 'package:user_application/appInfo/app_info.dart';
 import 'package:user_application/authentication/login_screen.dart';
 import 'package:user_application/pages/order_tracking_state_page.dart';
 import 'package:user_application/widgets/main_screen.dart';
+
+import 'methods/notification_service.dart';
 
 
 void main() async {
@@ -59,8 +63,51 @@ Future<void> _checkAndRequestLocationPermission() async {
   }
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+  @override
+  void initState() {
+    super.initState();
+
+    NotificationService();
+    _submitTokenToDatabase(context);
+  }
+
+  Future<void> _submitTokenToDatabase(BuildContext context) async {
+    try {
+      await messaging.requestPermission();
+
+      String? token = await messaging.getToken();
+
+      FirebaseAuth auth = FirebaseAuth.instance;
+      User? firebaseUser = auth.currentUser;
+
+      if (firebaseUser != null) {
+        // Storing token in Firebase Realtime Database
+        Map<String, String> tokenDataMap = {
+          "token": token!,
+        };
+
+        await FirebaseDatabase.instance
+            .ref()
+            .child("drivers")
+            .child(firebaseUser.uid)
+            .update(tokenDataMap);
+
+        print("Token: $token updated");
+      }
+    } catch (e) {
+      print("Error during token submission: ${e.toString()}");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +121,9 @@ class MyApp extends StatelessWidget {
           fontFamily: 'Roboto', // Set default font family
         ),
         debugShowCheckedModeBanner: false,
-        initialRoute: FirebaseAuth.instance.currentUser == null ? '/login' : '/home',
+        initialRoute: FirebaseAuth.instance.currentUser == null
+            ? '/login'
+            : '/home',
         routes: {
           '/home': (context) => MainScreen(),
           '/login': (context) => const LoginScreen(),
