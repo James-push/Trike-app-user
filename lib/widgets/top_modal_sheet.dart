@@ -149,6 +149,11 @@ class _TopModalSheetState extends State<TopModalSheet>
 
     _controller.forward();
 
+    // Request focus for the destination field
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).requestFocus(_destinationFocusNode);
+    });
+
     // Listen to the focus changes to trigger UI updates
     _pickupFocusNode.addListener(() {
       setState(() {});

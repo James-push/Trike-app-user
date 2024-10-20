@@ -39,7 +39,8 @@ class SuggestionsPlacesUI extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16,
                     color: Colors.black,
-                    fontWeight: FontWeight.w600, // Slightly bolder
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: 0.5,
                   ),
                 ),
                 Text(

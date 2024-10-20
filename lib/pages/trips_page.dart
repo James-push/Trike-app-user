@@ -2,8 +2,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../methods/user_service.dart';
-import '../widgets/error_dialog.dart';
-
 
 class TripsPage extends StatefulWidget {
   const TripsPage({super.key});

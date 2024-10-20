@@ -1,5 +1,4 @@
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:user_application/methods/user_service.dart';
 import 'package:user_application/widgets/logout_dialog.dart';

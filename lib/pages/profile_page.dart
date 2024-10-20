@@ -5,7 +5,6 @@ import 'package:user_application/pages/edit_profile.dart';
 import '../methods/custom_page_route.dart';
 import '../methods/fetchUserData.dart';
 import '../methods/user_service.dart';
-import '../widgets/error_dialog.dart';
 import '../widgets/loading_dialog.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';

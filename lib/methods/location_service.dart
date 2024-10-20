@@ -32,8 +32,8 @@ class LocationService {
           context: context,
           builder: (context) {
             return CustomDialog(
-              titlemessageTxt: "Out of Service Area",
-              messageTxt: "It looks like you're outside our service area. Please move closer to Sta Maria Subdivision to continue.",
+              titlemessageTxt: "Service Not Available Here",
+              messageTxt: "You need to be inside Sta. Maria Subdivision to use this service.",
               imagePath: 'assets/images/far_icon.png',
               imageSize: 100.0, // Customize the image size
             );
