@@ -59,34 +59,25 @@ class NotificationService {
     FirebaseMessaging.onBackgroundMessage(_backgroundMessageHandler);
   }
 
-  // Show notification content when the app is tapped
-  void _showNotificationContent(BuildContext context, String? title, String? body, Map<String, dynamic> data) {
+  // Show notification content when the app is tapped - Try mo to juls
+  void _showNotificationContent(
+      BuildContext context,
+      String? title,
+      String? body,
+      Map<String, dynamic> data,
+      ) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title ?? 'No Title'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Body: $body'),
-              SizedBox(height: 10),
-              Text('Data: ${data.toString()}'),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
+        return CustomDialogNotification(
+          titlemessageTxt: title ?? 'No Title',
+          messageTxt: body ?? 'No message available',
+          imagePath: 'assets/images/bell_icon.png', // Example image path
+          imageSize: 50.0, // Adjust size as needed
+          data: data, // Pass the data to the dialog
         );
       },
     );
-  }
 
   // Show local notification when app is in the foreground
   Future<void> _showNotification(RemoteMessage message) async {
